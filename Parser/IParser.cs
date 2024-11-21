@@ -8,12 +8,7 @@ public interface IParseFailure{}
 
 public record ParseFailure<T>() : IParseResult<T>, IParseFailure;
 
-public abstract class Parser<T>
+public interface IParser<T>
 {
-  public IParseResult<T> Parse(string input)
-  {
-    return Parse(input.ToCharArray(), 0);
-  }
-
-  abstract public IParseResult<T> Parse(char[] input, int position);
+  public IParseResult<T> Parse(char[] input, int position);
 }

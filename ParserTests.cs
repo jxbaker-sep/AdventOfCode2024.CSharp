@@ -12,12 +12,12 @@ public class ParserTests
     public void Char()
     {
         var cp = new CharParser();
-        cp.Parse("").Should().BeAssignableTo<IParseFailure>();
-        cp.Parse("a").Should().BeOfType<ParseSuccess<char>>()
+        cp.Parse("".ToCharArray(), 0).Should().BeAssignableTo<IParseFailure>();
+        cp.Parse("a".ToCharArray(), 0).Should().BeOfType<ParseSuccess<char>>()
             .Which.Value.Should().Be('a');
-        cp.Parse("bde").Should().BeOfType<ParseSuccess<char>>()
+        cp.Parse("bde".ToCharArray(), 0).Should().BeOfType<ParseSuccess<char>>()
             .Which.Value.Should().Be('b');
-        cp.Parse("bde").Should().BeOfType<ParseSuccess<char>>()
+        cp.Parse("bde".ToCharArray(), 0).Should().BeOfType<ParseSuccess<char>>()
             .Which.PositionAfter.Should().Be(1);
         
     }
@@ -26,13 +26,13 @@ public class ParserTests
     public void Optional()
     {
         var cp = new CharParser().Optional();
-        cp.Parse("").Should().BeOfType<ParseSuccess<List<char>>>()
+        cp.Parse("".ToCharArray(), 0).Should().BeOfType<ParseSuccess<List<char>>>()
             .Which.Value.Should().BeEmpty();
-        cp.Parse("a").Should().BeOfType<ParseSuccess<List<char>>>()
+        cp.Parse("a".ToCharArray(), 0).Should().BeOfType<ParseSuccess<List<char>>>()
             .Which.Value.Should().BeEquivalentTo(['a']);
-        cp.Parse("bde").Should().BeOfType<ParseSuccess<List<char>>>()
+        cp.Parse("bde".ToCharArray(), 0).Should().BeOfType<ParseSuccess<List<char>>>()
             .Which.Value.Should().BeEquivalentTo(['b']);
-        cp.Parse("bde").Should().BeOfType<ParseSuccess<List<char>>>()
+        cp.Parse("bde".ToCharArray(), 0).Should().BeOfType<ParseSuccess<List<char>>>()
             .Which.PositionAfter.Should().Be(1);
     }
 

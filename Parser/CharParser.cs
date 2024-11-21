@@ -1,8 +1,8 @@
 namespace Parser;
 
-public class CharParser : Parser<char>
+public class CharParser : IParser<char>
 {
-  override public IParseResult<char> Parse(char[] input, int position)
+  public IParseResult<char> Parse(char[] input, int position)
   {
     if (position < input.Length)
     {

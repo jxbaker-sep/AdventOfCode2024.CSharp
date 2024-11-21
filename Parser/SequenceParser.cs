@@ -1,8 +1,8 @@
 namespace Parser;
 
-public class SequenceParser<T1, T2>(Parser<T1> first, Parser<T2> second) : Parser<(T1 First, T2 Second)>
+public class SequenceParser<T1, T2>(IParser<T1> first, IParser<T2> second) : IParser<(T1 First, T2 Second)>
 {
-    public override IParseResult<(T1, T2)> Parse(char[] input, int position)
+    public IParseResult<(T1, T2)> Parse(char[] input, int position)
     {
         var r1 = first.Parse(input, position);
         if (r1 is ParseSuccess<T1> r)
@@ -16,5 +16,5 @@ public class SequenceParser<T1, T2>(Parser<T1> first, Parser<T2> second) : Parse
 
 public static class SequenceParser
 {
-    public static SequenceParser<T1, T2> From<T1, T2>(Parser<T1> first, Parser<T2> second) => new SequenceParser<T1, T2>(first, second);
+    public static SequenceParser<T1, T2> From<T1, T2>(IParser<T1> first, IParser<T2> second) => new SequenceParser<T1, T2>(first, second);
 }

@@ -4,9 +4,9 @@ using System.Diagnostics;
 
 namespace Parser;
 
-public class RangeParser<T>(Parser<T> other, int min = 0, int max = int.MaxValue) : Parser<List<T>>
+public class RangeParser<T>(IParser<T> other, int min = 0, int max = int.MaxValue) : IParser<List<T>>
 {
-    public override IParseResult<List<T>> Parse(char[] input, int position)
+    public IParseResult<List<T>> Parse(char[] input, int position)
     {
         var output = new List<T>();
         var result = other.Parse(input, position);
