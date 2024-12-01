@@ -8,7 +8,6 @@ namespace Parser;
 public interface IParseResult<T>
 {
   public IParseResult<T2> Then<T2>(Func<ParseSuccess<T>, IParseResult<T2>> fct);
-  public IParseResult<T> Or(Parser<T> other);
 }
 
 public record ParseSuccess<T>(T Value, char[] Data, int Position) : IParseResult<T>
@@ -16,11 +15,6 @@ public record ParseSuccess<T>(T Value, char[] Data, int Position) : IParseResult
   public IParseResult<T2> Then<T2>(Func<ParseSuccess<T>, IParseResult<T2>> fct)
   {
     return fct(this);
-  }
-
-  public IParseResult<T> Or(Parser<T> other)
-  {
-    return this;
   }
 }
 
@@ -36,11 +30,6 @@ public record ParseFailure<T>(string Annotation, char[] Data, int Position) : IP
   {
     return new ParseFailure<T2>(Annotation, Data, Position);
   }
-
-  public IParseResult<T> Or(Parser<T> other)
-  {
-    return other.Parse(Data, Position);
-  }
 }
 
 public static class ParseResult
@@ -55,8 +44,8 @@ public abstract class Parser<T>
   public static Parser<T> operator|(Parser<T> lhs, Parser<T> rhs) {
     return Parser.From((c,i) => {
       var temp = lhs.Parse(c, i);
-      var x = temp.Or(rhs);
-      return x;
+      if (temp is ParseSuccess<T> s) return s;
+      return rhs.Parse(c, i);
     });
   }
 
