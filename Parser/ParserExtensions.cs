@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using Utils;
 
@@ -11,16 +12,20 @@ public static class ParserExtensions
 {
   public static Parser<TOut> Select<TIn, TOut>(this Parser<TIn> parser, Func<TIn, TOut> fct)
   {
-    return Parser.From((c, i) => {
-      var r = parser.Parse(c, i);
-      return new ParseResult<TOut>(fct(r.Value), r.PositionAfter);
+    return Parser.From<TOut>((c, i) => {
+      var m = parser.Parse(c, i);
+      if (m is ParseSuccess<TIn> s) return ParseResult.From(fct(s.Value), s.Data, s.Position);
+      if (m is ParseFailure<TIn> f) return new ParseFailure<TOut>(f.Message, f.Data, i);
+      throw new ApplicationException("This shouldnt happen");
     });
   }
+
   public static Parser<T> Where<T>(this Parser<T> parser, Func<T, bool> fct, string annotation = "") {
-    return Parser.From((c, i) => {
+    return Parser.From<T>((c, i) => {
       var result = parser.Parse(c, i);
-      if (result is {} r && fct(r.Value)) return r;
-      throw new ParseException($"error in where parser: {annotation}", c, i);
+      if (result is ParseSuccess<T> r && fct(r.Value)) return r;
+      if (result is ParseFailure<T> f) return f;
+      return new ParseFailure<T>(annotation, c, i);
     });
   }
   public static RangeParser<T> Optional<T>(this Parser<T> parser) => new(parser, 0, 1);
@@ -30,15 +35,24 @@ public static class ParserExtensions
   public static Parser<List<T>> Star<T>(this Parser<T> parser, string seperator) => parser.Before(seperator).Star() + parser;
 
   public static RangeParser<T> Plus<T>(this Parser<T> parser) => new(parser, 1);
-  public static T Parse<T>(this Parser<T> parser, string x) => parser.Parse(x.ToCharArray(), 0).Value;
-  public static T? ParseOrNull<T>(this Parser<T> parser, string x) where T: class {
-    try {
-      return parser.Parse(x.ToCharArray(), 0).Value;
-    }
-     catch(ParseException) {
-      return null;
-    }
+  public static T ParseValue<T>(this Parser<T> parser, string x) {
+    var m = parser.Parse(x.ToCharArray(), 0);
+    if (m is ParseSuccess<T> r) return r.Value;
+    throw new ApplicationException((m as ParseFailure<T>)!.Message);
   }
+    
+  public static T? ParseOrNull<T>(this Parser<T> parser, string x) where T: class {
+    var m = parser.Parse(x.ToCharArray(), 0);
+    if (m is ParseSuccess<T> r) return r.Value;
+    return null;
+  }
+
+  public static T? ParseOrNullStruct<T>(this Parser<T> parser, string x) where T: struct {
+    var m = parser.Parse(x.ToCharArray(), 0);
+    if (m is ParseSuccess<T> r) return r.Value;
+    return null;
+  }
+
   public static Parser<string> Join<T>(this Parser<List<T>> parser) => parser.Select(it => it.Join());
 
   public static Parser<T> End<T>(this Parser<T> parser) => parser.Before(P.EndOfInput);
@@ -76,11 +90,12 @@ public static class ParserExtensions
 
   public static Parser<T> Peek<T, T2>(this Parser<T> p1, Parser<T2> p2)
   {
-    return Parser.From((c,i) => {
-      var r1 = p1.Parse(c,i);
-      p2.Parse(c, r1.PositionAfter);
-      return r1;
-    });
+    return Parser.From((c,i) => 
+      p1.Parse(c, i).Then<T>(v => {
+        var peeked = p2.Parse(v.Data, v.Position);
+        if (peeked is ParseSuccess<T2>) return v;
+        return new ParseFailure<T>((peeked as ParseFailure<T2>)!.Annotation, v.Data, i);
+      }));
   }
 
   public static Parser<T> PeekNot<T>(this Parser<T> p1, string p2) => p1.PeekNot(P.String(p2));
@@ -88,15 +103,12 @@ public static class ParserExtensions
 
   public static Parser<T> PeekNot<T, T2>(this Parser<T> p1, Parser<T2> p2)
   {
-    return Parser.From((c,i) => {
-      var r1 = p1.Parse(c,i);
-      try {
-        p2.Parse(c, r1.PositionAfter);
-      } catch (ParseException) {
-        return r1;
-      }
-      throw new ParseException("Failed PeekNot assertion", c, r1.PositionAfter);
-    });
+    return Parser.From((c,i) => 
+      p1.Parse(c, i).Then<T>(v => {
+        var peeked = p2.Parse(v.Data, v.Position);
+        if (peeked is ParseFailure<T2>) return v;
+        return new ParseFailure<T>("Negative peek failed", v.Data, i);
+      }));
   }
 
   public static Parser<P.Unit> Discard<T>(this Parser<T> p) => p.Select(_ => new P.Unit());
