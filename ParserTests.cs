@@ -21,10 +21,10 @@ public class ParserTests
     [Fact]
     public void BeforeTest()
     {
-        // P.Number.Before("+").ParseOrNullStruct("123").Should().BeNull();
-        // P.Number.Before("+").ParseOrNullStruct("123+").Should().Be(123);
+        P.Number.Before("+").ParseOrNullStruct("123").Should().BeNull();
+        P.Number.Before("+").ParseOrNullStruct("123+").Should().Be(123);
         (P.Number.Before("+") | P.Number).ParseValue("123").Should().Be(123);
-        // (P.Letter.Select(_=>0L).Before("1") | P.Number).ParseValue("1").Should().Be(1);
+        (P.Letter.Select(_=>0L).Before("1") | P.Number).ParseValue("1").Should().Be(1);
     }
 
 
@@ -78,18 +78,18 @@ public class ParserTests
 
     [Theory]
     [InlineData("1", 1)]
-    // [InlineData("1 + 1", 2)]
-    // [InlineData("(1 + 1)", 2)]
-    // [InlineData("(1) + (1)", 2)]
-    // [InlineData("(1 + 2) + 3", 6)]
-    // [InlineData("1 + 2 + 3", 6)]
-    // [InlineData("1 * 2 + 3", 5)]
-    // [InlineData("1 + 2 * 3", 7)]
-    // [InlineData("1 * 2 + 3 * 4", 14)]
-    // [InlineData("1 * 2 * 3 * 4", 24)]
-    // [InlineData("1 * (2 + 3) * 4", 20)]
-    // [InlineData("1 * 2 * 3 + 4", 10)]
-    // [InlineData("(1 + 2) * (3 + 4)", 21)]
+    [InlineData("1 + 1", 2)]
+    [InlineData("(1 + 1)", 2)]
+    [InlineData("(1) + (1)", 2)]
+    [InlineData("(1 + 2) + 3", 6)]
+    [InlineData("1 + 2 + 3", 6)]
+    [InlineData("1 * 2 + 3", 5)]
+    [InlineData("1 + 2 * 3", 7)]
+    [InlineData("1 * 2 + 3 * 4", 14)]
+    [InlineData("1 * 2 * 3 * 4", 24)]
+    [InlineData("1 * (2 + 3) * 4", 20)]
+    [InlineData("1 * 2 * 3 + 4", 10)]
+    [InlineData("(1 + 2) * (3 + 4)", 21)]
     public void SimpleCalculatorTest(string input, long expected)
     {
         // 1 + 2 * 3
@@ -97,9 +97,9 @@ public class ParserTests
         // expr: ( expr ) | Number 
         var expression = P.Defer<long>();
         var simpleValue = expression.Between("(", ")") | P.Number.Trim();
-        var operatorExpression = P.Sequence(simpleValue.Before("+"), expression).Select(it => it.First + it.Second);
-            // | P.Sequence(simpleValue.Before("*"), simpleValue.Before("+"), expression).Select(it => it.First * it.Second + it.Third)
-            // | P.Sequence(simpleValue.Before("*"), expression).Select(it => it.First * it.Second);
+        var operatorExpression = P.Sequence(simpleValue.Before("+"), expression).Select(it => it.First + it.Second)
+            | P.Sequence(simpleValue.Before("*"), simpleValue.Before("+"), expression).Select(it => it.First * it.Second + it.Third)
+            | P.Sequence(simpleValue.Before("*"), expression).Select(it => it.First * it.Second);
         expression.Actual = operatorExpression | simpleValue;
 
         expression.ParseValue(input).Should().Be(expected);
