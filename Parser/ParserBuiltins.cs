@@ -40,7 +40,7 @@ public static class ParserBuiltins
 
   public static Parser<(T1 First, T2 Second)> Sequence<T1, T2>(Parser<T1> p1, Parser<T2> p2)
   {
-    return p1.Then<T1, (T1, T2)>(v =>
+    return p1.Then(v =>
       {
         var r2 = p2.Parse(v.Data, v.Position);
         if (r2 is ParseSuccess<T2> v2) return ParseResult.From((v.Value, v2.Value), v2.Data, v2.Position);
@@ -50,13 +50,13 @@ public static class ParserBuiltins
 
   public static Parser<(T1 First, T2 Second, T3 Third)> Sequence<T1, T2, T3>(Parser<T1> p1, Parser<T2> p2, Parser<T3> p3)
   {
-    return p1.Then<T1, (T1, T2)>(v =>
+    return p1.Then(v =>
       {
         var r2 = p2.Parse(v.Data, v.Position);
         if (r2 is ParseSuccess<T2> v2) return ParseResult.From((v.Value, v2.Value), v2.Data, v2.Position);
         return (r2 as ParseFailure<T2>)!.As<(T1, T2)>();
       })
-      .Then<(T1, T2), (T1, T2, T3)>(v => {
+      .Then(v => {
         var r3 = p3.Parse(v.Data, v.Position);
         if (r3 is ParseSuccess<T3> v3) return ParseResult.From((v.Value.Item1, v.Value.Item2, v3.Value), v3.Data, v3.Position);
         return (r3 as ParseFailure<T3>)!.As<(T1, T2, T3)>();

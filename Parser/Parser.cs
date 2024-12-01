@@ -30,7 +30,7 @@ public record ParseFailure<T>(string Annotation, char[] Data, int Position) : IP
 
 public static class ParseResult
 {
-  public static ParseSuccess<T> From<T>(T t, char[] data, int i) => new(t, data, i);
+  public static IParseResult<T> From<T>(T t, char[] data, int i) => new ParseSuccess<T>(t, data, i);
 }
 
 public abstract class Parser<T>
