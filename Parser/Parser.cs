@@ -7,15 +7,10 @@ namespace Parser;
 
 public interface IParseResult<T>
 {
-  public IParseResult<T2> Then<T2>(Func<ParseSuccess<T>, IParseResult<T2>> fct);
 }
 
 public record ParseSuccess<T>(T Value, char[] Data, int Position) : IParseResult<T>
 {
-  public IParseResult<T2> Then<T2>(Func<ParseSuccess<T>, IParseResult<T2>> fct)
-  {
-    return fct(this);
-  }
 }
 
 public record ParseFailure<T>(string Annotation, char[] Data, int Position) : IParseResult<T>
@@ -26,10 +21,11 @@ public record ParseFailure<T>(string Annotation, char[] Data, int Position) : IP
     }
   }
 
-  public IParseResult<T2> Then<T2>(Func<ParseSuccess<T>, IParseResult<T2>> fct)
+  public ParseFailure<T2> As<T2>()
   {
     return new ParseFailure<T2>(Annotation, Data, Position);
   }
+
 }
 
 public static class ParseResult

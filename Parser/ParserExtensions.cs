@@ -20,6 +20,15 @@ public static class ParserExtensions
     });
   }
 
+  public static Parser<TOut> Then<TIn, TOut>(this Parser<TIn> parser, Func<ParseSuccess<TIn>, IParseResult<TOut>> action)
+  {
+    return Parser.From((c, i) => {
+      var m = parser.Parse(c, i);
+      if (m is ParseSuccess<TIn> v) return action(v);
+      return new ParseFailure<TOut>((m as ParseFailure<TIn>)!.Message, c, i);
+    });
+  }
+
   public static Parser<T> Where<T>(this Parser<T> parser, Func<T, bool> fct, string annotation = "") {
     return Parser.From<T>((c, i) => {
       var result = parser.Parse(c, i);
@@ -90,12 +99,11 @@ public static class ParserExtensions
 
   public static Parser<T> Peek<T, T2>(this Parser<T> p1, Parser<T2> p2)
   {
-    return Parser.From((c,i) => 
-      p1.Parse(c, i).Then<T>(v => {
+    return p1.Then<T,T>(v => {
         var peeked = p2.Parse(v.Data, v.Position);
         if (peeked is ParseSuccess<T2>) return v;
-        return new ParseFailure<T>((peeked as ParseFailure<T2>)!.Annotation, v.Data, i);
-      }));
+        return new ParseFailure<T>((peeked as ParseFailure<T2>)!.Annotation, v.Data, v.Position);
+      });
   }
 
   public static Parser<T> PeekNot<T>(this Parser<T> p1, string p2) => p1.PeekNot(P.String(p2));
@@ -103,12 +111,11 @@ public static class ParserExtensions
 
   public static Parser<T> PeekNot<T, T2>(this Parser<T> p1, Parser<T2> p2)
   {
-    return Parser.From((c,i) => 
-      p1.Parse(c, i).Then<T>(v => {
+    return p1.Then<T, T>(v => {
         var peeked = p2.Parse(v.Data, v.Position);
         if (peeked is ParseFailure<T2>) return v;
-        return new ParseFailure<T>("Negative peek failed", v.Data, i);
-      }));
+        return new ParseFailure<T>("Negative peek failed", v.Data, v.Position);
+      });
   }
 
   public static Parser<P.Unit> Discard<T>(this Parser<T> p) => p.Select(_ => new P.Unit());
