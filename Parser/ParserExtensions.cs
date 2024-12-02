@@ -44,7 +44,7 @@ public static class ParserExtensions
   public static Parser<List<T>> Star<T>(this Parser<T> parser, string seperator) => parser.Before(seperator).Star() + parser;
 
   public static RangeParser<T> Plus<T>(this Parser<T> parser) => new(parser, 1);
-  public static T ParseValue<T>(this Parser<T> parser, string x) {
+  public static T Parse<T>(this Parser<T> parser, string x) {
     var m = parser.Parse(x.ToCharArray(), 0);
     if (m is ParseSuccess<T> r) return r.Value;
     throw new ApplicationException((m as ParseFailure<T>)!.Message);
