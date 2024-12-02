@@ -27,17 +27,27 @@ public class Day02
     data.Count(IsSafe2).Should().Be(expected);
   }
 
-  private static bool IsSafe1(List<long> it)
+  [Theory]
+  [InlineData("Day02.Sample", 4)]
+  [InlineData("Day02", 634)]
+  public void Part3(string path, int expected)
   {
-    var sign = Math.Sign(it[0] - it[1]);
-    return it.Windows(2).All(w => IsSafe(w, sign));
+    var data = Convert(AoCLoader.LoadLines(path));
+    data.Count(IsSafe3).Should().Be(expected);
   }
 
-  private static bool IsSafe(List<long> w, int sign)
+  private static bool IsSafe1(List<long> items)
   {
-    return Math.Sign(w[0] - w[1]) == sign
-        && Math.Abs(w[0] - w[1]) <= 3
-        && w[0] != w[1];
+    var sign = Math.Sign(items[0] - items[1]);
+    return items.Windows(2).All(w => IsSafe(w[0], w[1], sign));
+  }
+
+  private static bool IsSafe(long a, long b, int sign)
+  {
+    var d = a - b;
+    return Math.Sign(d) == sign
+        && Math.Abs(d) <= 3
+        && a != b;
   }
 
   private static bool IsSafe2(List<long> items)
@@ -50,6 +60,27 @@ public class Day02
       if (IsSafe1(temp)) return true;
     }
     return false;
+  }
+
+  private static bool IsSafe3(List<long> items)
+  {
+    var signs = items.Windows(2).Select(w => Math.Sign(w[0] - w[1])).ToList();
+    var sign = signs.GroupBy(it => it).OrderByDescending(it => it.Count()).First().Key;
+
+    var ws = items.Windows(2).Select(w => IsSafe(w[0], w[1], sign)).ToList();
+    var fwsi = ws.Select((it,index)=>(it,index)).Where(it => !it.it).Select(it => it.index).ToList();
+    if (fwsi.Count == 0) return true;
+    if (fwsi.Count == 1) 
+    {
+      var index = fwsi[0];
+      if (index == 0) return true;
+      if (index == ws.Count - 1) return true;
+      return IsSafe(items[index-1], items[index+1], sign)
+        || IsSafe(items[index], items[index + 2], sign);
+    }
+    if (fwsi.Count > 2) return false;
+    if (fwsi[0] + 1 != fwsi[1]) return false;
+    return IsSafe(items[fwsi[0]], items[fwsi[0] + 2], sign);
   }
 
   private static List<List<long>> Convert(string[] data)
