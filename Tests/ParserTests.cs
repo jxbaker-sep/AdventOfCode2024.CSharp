@@ -18,10 +18,10 @@ public class ParserTests
     [Fact]
     public void BeforeTest()
     {
-        P.Number.Before("+").ParseOrNullStruct("123").Should().BeNull();
-        P.Number.Before("+").ParseOrNullStruct("123+").Should().Be(123);
-        (P.Number.Before("+") | P.Number).Parse("123").Should().Be(123);
-        (P.Letter.Select(_=>0L).Before("1") | P.Number).Parse("1").Should().Be(1);
+        P.Long.Before("+").ParseOrNullStruct("123").Should().BeNull();
+        P.Long.Before("+").ParseOrNullStruct("123+").Should().Be(123);
+        (P.Long.Before("+") | P.Long).Parse("123").Should().Be(123);
+        (P.Letter.Select(_=>0L).Before("1") | P.Long).Parse("1").Should().Be(1);
     }
 
 
@@ -45,20 +45,18 @@ public class ParserTests
     [Fact]
     public void RangeTest()
     {
-        P.Digit.Range(1,3).Join().Parse("12345").Should().Be("123");
-        P.Digit.Range(1,10).Join().Parse("12345").Should().Be("12345");
-        P.Digit.Range(6,10).Invoking(it => it.Parse("12345")).Should().Throw<ApplicationException>();
+        P.Number.Range(1,3).Join().Parse("12345").Should().Be("123");
+        P.Number.Range(1,10).Join().Parse("12345").Should().Be("12345");
+        P.Number.Range(6,10).Invoking(it => it.Parse("12345")).Should().Throw<ApplicationException>();
     }
 
     [Fact]
     public void IdentifierTest()
     {
-        bool InRange(char a, char b, char c) => b <= a && a <= c;
-        bool IsFirst(char a) => a == '_' || InRange(a, 'a', 'z') || InRange(a, 'A', 'Z');
-        bool IsDigit(char a) => InRange(a, '0', '9');
-        var first = P.Any.Where(it => IsFirst(it));
-        var alnum = P.Any.Where(it => IsFirst(it) || IsDigit(it));
-        var idParser = P.Sequence(first, alnum.Star())
+        static bool IsFirst(char a) => a == '_' || char.IsLetter(a);
+        var first = P.Any.Where(IsFirst);
+        var subsequent = P.Any.Where(it => IsFirst(it) || char.IsNumber(it));
+        var idParser = P.Sequence(first, subsequent.Star())
             .Select(it => $"{it.First}{it.Second.Join()}");
         idParser.Parse("_").Should().Be("_");
         idParser.Invoking(it => it.Parse("")).Should().Throw<ApplicationException>();
@@ -71,7 +69,7 @@ public class ParserTests
     [InlineData("12", 12)]
     [InlineData("123", 123)]
     [InlineData("12345", 12345)]
-    public void NumberTest(string input, long value) => P.Number.Parse(input).Should().Be(value);
+    public void NumberTest(string input, long value) => P.Long.Parse(input).Should().Be(value);
 
     [Theory]
     [InlineData("1", 1)]
@@ -93,7 +91,7 @@ public class ParserTests
         // 2 * 3 + 1
         // expr: ( expr ) | Number 
         var expression = P.Defer<long>();
-        var simpleValue = expression.Between("(", ")") | P.Number.Trim();
+        var simpleValue = expression.Between("(", ")") | P.Long.Trim();
         var operatorExpression = P.Sequence(simpleValue.Before("+"), expression).Select(it => it.First + it.Second)
             | P.Sequence(simpleValue.Before("*"), simpleValue.Before("+"), expression).Select(it => it.First * it.Second + it.Third)
             | P.Sequence(simpleValue.Before("*"), expression).Select(it => it.First * it.Second);
@@ -109,7 +107,7 @@ public class ParserTests
     [InlineData("abc145def", 145)]
     public void BetweenTest(string input, long expected)
     {
-        var p = P.Number.Between("abc", "def");
+        var p = P.Long.Between("abc", "def");
         p.Parse(input).Should().Be(expected);
     }
 
@@ -123,7 +121,7 @@ public class ParserTests
     [Fact]
     public void OrTest()
     {
-        var parser = P.Letter | P.Numeral;
+        var parser = P.Letter | P.Number;
         parser.Parse("1").Should().Be('1');
         parser.Parse("a").Should().Be('a');
         parser.Parse("B").Should().Be('B');
@@ -133,7 +131,7 @@ public class ParserTests
     [Fact]
     public void PeekNotTest()
     {
-        var parser = P.Number.Trim().PeekNot(P.String("STOP").End());
+        var parser = P.Long.Trim().PeekNot(P.String("STOP").End());
         parser.Parse("12 1").Should().Be(12);
         parser.Parse("234 STOP no not really").Should().Be(234);
         parser.Invoking(it => it.Parse("234 STOP")).Should().Throw<ApplicationException>();
@@ -142,7 +140,7 @@ public class ParserTests
     [Fact]
     public void PeekTest()
     {
-        var parser = P.Number.Trim().Peek(P.String("STOP").End());
+        var parser = P.Long.Trim().Peek(P.String("STOP").End());
         parser.ParseOrNullStruct("12 1").Should().BeNull();
         parser.ParseOrNullStruct("234 STOP no not really").Should().BeNull();
         parser.ParseOrNullStruct("234 STOP").Should().Be(234);
@@ -161,8 +159,8 @@ public class ParserTests
     public void JsonParserTest(string jsonData)
     {
         var anyJsonObject = P.Defer<P.Unit>();
-        var jsonInt = P.Number.Trim().Discard();
-        var jsonFloat = P.Sequence(P.Number.Before("."), P.Number).Trim().Discard();
+        var jsonInt = P.Long.Trim().Discard();
+        var jsonFloat = P.Sequence(P.Long.Before("."), P.Long).Trim().Discard();
         var jsonBool = (P.String("true") | P.String("false")).Trim().Discard();
         var stringElement = P.Any.After("\\") | P.Any.Where(it => it != '\"');
         var jsonString = stringElement.Star().Between("\"", "\"").Trim().Discard();
@@ -179,7 +177,7 @@ public class ParserTests
     [InlineData("2, 3\n4,5,6", 126)]
     public void SumOfProducts(string input, long expected)
     {
-        P.Sequence(P.Number, P.Number.After(",").Star()).Before(P.EndOfLine)
+        P.Sequence(P.Long, P.Long.After(",").Star()).Before(P.EndOfLine)
             .Select(it => it.First * it.Second.Append(1).Product())
             .Star()
             .End()
@@ -193,47 +191,47 @@ public class ParserTests
     [InlineData("1", 1)]
     [InlineData("1,2", 3)]
     [InlineData("1, 2, 3", 6)]
-    public void StarWithSeperatorTest(string input, int expected) => P.Number.Star(",").Parse(input).Sum().Should().Be(expected);
+    public void StarWithSeperatorTest(string input, int expected) => P.Long.Star(",").Parse(input).Sum().Should().Be(expected);
 
     [Theory]
     [InlineData("1", 1)]
     [InlineData("1,2", 3)]
     [InlineData("1, 2, 3", 6)]
-    public void PlusWithSeperatorTest(string input, int expected) => P.Number.Plus(",").Parse(input).Sum().Should().Be(expected);
+    public void PlusWithSeperatorTest(string input, int expected) => P.Long.Plus(",").Parse(input).Sum().Should().Be(expected);
 
     [Fact]
     public void OperatorPlusTest1()
     {
-        (P.Number.Before(",").Star() + P.Number).Parse("1,2,3").Should().BeEquivalentTo(new List<int>{1,2,3});
+        (P.Long.Before(",").Star() + P.Long).Parse("1,2,3").Should().BeEquivalentTo(new List<int>{1,2,3});
     }
 
     [Fact]
     public void OperatorPlusTest3()
     {
-        (P.Number.Before(",") + P.Number).Parse("1,2").Should().BeEquivalentTo(new List<int>{1,2});
+        (P.Long.Before(",") + P.Long).Parse("1,2").Should().BeEquivalentTo(new List<int>{1,2});
     }
 
     [Fact]
     public void OperatorPlusTest4()
     {
-        (P.Number.Before(",") + P.Number.Before(",") + P.Number).Parse("1,2,3").Should().BeEquivalentTo(new List<int>{1,2,3});
+        (P.Long.Before(",") + P.Long.Before(",") + P.Long).Parse("1,2,3").Should().BeEquivalentTo(new List<int>{1,2,3});
     }
 
     [Fact]
     public void Sequence2Tests()
     {
-        P.Sequence(P.Number, P.Letter).Parse("1A").Should().Be((1, 'A'));
+        P.Sequence(P.Long, P.Letter).Parse("1A").Should().Be((1, 'A'));
     }
 
     [Fact]
     public void Sequence3Tests()
     {
-        P.Sequence(P.Number, P.Letter, P.Any).Parse("1A*").Should().Be((1, 'A', '*'));
+        P.Sequence(P.Long, P.Letter, P.Any).Parse("1A*").Should().Be((1, 'A', '*'));
     }
 
     [Fact]
     public void Sequence4Tests()
     {
-        P.Sequence(P.Number, P.Letter, P.Any, P.String("-2-")).Parse("1A*-2-").Should().Be((1, 'A', '*', "-2-"));
+        P.Sequence(P.Long, P.Letter, P.Any, P.String("-2-")).Parse("1A*-2-").Should().Be((1, 'A', '*', "-2-"));
     }
 }

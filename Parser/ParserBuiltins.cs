@@ -1,7 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using Microsoft.VisualStudio.TestPlatform.ObjectModel.Adapter;
 using Utils;
 
 namespace Parser;
@@ -11,12 +7,10 @@ public static class ParserBuiltins
 {
   public static readonly Parser<char> Any = new AnyParser();
   public static readonly Parser<char> Letter = Any.Where(char.IsLetter, "IsLetter");
-  public static readonly Parser<char> Numeral = Any.Where(char.IsNumber, "IsNumber");
-  public static readonly Parser<int> Digit = Numeral.Select(it => it - '0');
-  public static readonly Parser<long> Number = Numeral.Plus().Join().Select(Convert.ToInt64);
+  public static readonly Parser<char> Number = Any.Where(char.IsNumber, "IsNumber");
+  public static readonly Parser<long> Long = Number.Plus().Join().Select(Convert.ToInt64);
 
-
-  public static readonly Parser<char> Whitespace = Any.Where(it => char.IsWhiteSpace(it), "IsWhiteSpace");
+  public static readonly Parser<char> Whitespace = Any.Where(char.IsWhiteSpace, "IsWhiteSpace");
 
   public static DeferredParser<T> Defer<T>() => new();
 

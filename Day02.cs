@@ -86,6 +86,6 @@ public class Day02
 
   private static List<List<long>> Convert(string[] data)
   {
-    return data.Select(it => P.Number.Trim().Plus().Parse(it)).ToList();
+    return data.Select(it => P.Long.Trim().Plus().Parse(it)).ToList();
   }
 }
