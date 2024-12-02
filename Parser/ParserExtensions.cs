@@ -12,7 +12,7 @@ public static class ParserExtensions
 {
   public static Parser<TOut> Select<TIn, TOut>(this Parser<TIn> parser, Func<TIn, TOut> fct)
   {
-    return Parser.From<TOut>((c, i) => {
+    return Parser.From((c, i) => {
       var m = parser.Parse(c, i);
       if (m is ParseSuccess<TIn> s) return ParseResult.From(fct(s.Value), s.Data, s.Position);
       if (m is ParseFailure<TIn> f) return new ParseFailure<TOut>(f.Message, f.Data, i);
@@ -27,6 +27,23 @@ public static class ParserExtensions
       if (m is ParseSuccess<TIn> v) return action(v);
       return new ParseFailure<TOut>((m as ParseFailure<TIn>)!.Message, c, i);
     });
+  }
+
+  public static Parser<TOut> Then<TIn, TOut>(this Parser<TIn> parser, Func<TIn, Parser<TOut>> action)
+  {
+    return Parser.From((c, i) => {
+      var m1 = parser.Parse(c, i);
+      if (m1 is ParseSuccess<TIn> v) {
+        var other = action(v.Value);
+        return other.Parse(c, v.Position);
+      }
+      return (m1 as ParseFailure<TIn>)!.As<TOut>();
+    });
+  }
+
+  public static Parser<(T1 First, T2 Second)> Then<T1, T2>(this Parser<T1> parser, Parser<T2> other)
+  {
+    return parser.Then(v => other.Select(v2 => (v, v2)));
   }
 
   public static Parser<T> Where<T>(this Parser<T> parser, Func<T, bool> fct, string annotation = "") {

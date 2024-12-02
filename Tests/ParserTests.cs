@@ -218,4 +218,22 @@ public class ParserTests
     {
         (P.Number.Before(",") + P.Number.Before(",") + P.Number).Parse("1,2,3").Should().BeEquivalentTo(new List<int>{1,2,3});
     }
+
+    [Fact]
+    public void Sequence2Tests()
+    {
+        P.Sequence(P.Number, P.Letter).Parse("1A").Should().Be((1, 'A'));
+    }
+
+    [Fact]
+    public void Sequence3Tests()
+    {
+        P.Sequence(P.Number, P.Letter, P.Any).Parse("1A*").Should().Be((1, 'A', '*'));
+    }
+
+    [Fact]
+    public void Sequence4Tests()
+    {
+        P.Sequence(P.Number, P.Letter, P.Any, P.String("-2-")).Parse("1A*-2-").Should().Be((1, 'A', '*', "-2-"));
+    }
 }

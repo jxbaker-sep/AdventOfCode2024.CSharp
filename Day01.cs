@@ -36,10 +36,10 @@ public class Day01
 
     private static (List<long>, List<long>) Convert(string[] data)
     {
-        var temp = data.Select(it => P.Sequence(P.Number.Trim(), P.Number).Parse(it)).ToList();
+        var temp = data.Select(it => (P.Number.Trim() + P.Number).Parse(it)).ToList();
         return (
-            temp.Select(it => it.First).Order().ToList(),
-            temp.Select(it => it.Second).Order().ToList()
+            temp.Select(it => it[0]).Order().ToList(),
+            temp.Select(it => it[1]).Order().ToList()
         );
     }
 }

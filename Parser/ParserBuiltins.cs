@@ -32,7 +32,7 @@ public static class ParserBuiltins
 
   public static Parser<string> String(string s)
   {
-    return Parser.From<string>((c, i) =>
+    return Parser.From((c, i) =>
     {
       if (c.Length >= i + s.Length && c[i..(i + s.Length)].Join() == s) return ParseResult.From(s, c, i + s.Length);
       return new ParseFailure<string>($"expected string {s}", c, i);
@@ -41,27 +41,17 @@ public static class ParserBuiltins
 
   public static Parser<(T1 First, T2 Second)> Sequence<T1, T2>(Parser<T1> p1, Parser<T2> p2)
   {
-    return p1.Then(v =>
-      {
-        var r2 = p2.Parse(v.Data, v.Position);
-        if (r2 is ParseSuccess<T2> v2) return ParseResult.From((v.Value, v2.Value), v2.Data, v2.Position);
-        return (r2 as ParseFailure<T2>)!.As<(T1, T2)>();
-      });
+    return p1.Then(p2);
   }
 
   public static Parser<(T1 First, T2 Second, T3 Third)> Sequence<T1, T2, T3>(Parser<T1> p1, Parser<T2> p2, Parser<T3> p3)
   {
-    return p1.Then(v =>
-      {
-        var r2 = p2.Parse(v.Data, v.Position);
-        if (r2 is ParseSuccess<T2> v2) return ParseResult.From((v.Value, v2.Value), v2.Data, v2.Position);
-        return (r2 as ParseFailure<T2>)!.As<(T1, T2)>();
-      })
-      .Then(v => {
-        var r3 = p3.Parse(v.Data, v.Position);
-        if (r3 is ParseSuccess<T3> v3) return ParseResult.From((v.Value.Item1, v.Value.Item2, v3.Value), v3.Data, v3.Position);
-        return (r3 as ParseFailure<T3>)!.As<(T1, T2, T3)>();
-      });
+    return Sequence(p1, p2).Then(p3).Select(it => (it.First.First, it.First.Second, it.Second));
   }
 
+  public static Parser<(T1 First, T2 Second, T3 Third, T4 Fourth)> Sequence<T1, T2, T3, T4>(Parser<T1> p1, Parser<T2> p2, Parser<T3> p3, Parser<T4> p4)
+  {
+    return Sequence(p1, p2, p3).Then(p4)
+      .Select(it => (it.First.First, it.First.Second, it.First.Third, it.Second));
+  }
 }
