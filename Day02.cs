@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Security.Cryptography;
 using FluentAssertions;
 using Parser;
@@ -55,8 +56,7 @@ public class Day02
     if (IsSafe1(items)) return true;
     for (var i = 0; i < items.Count; i++)
     {
-      var temp = items.ToList();
-      temp.RemoveAt(i);
+      var temp = items[0..i].Concat(items[(i+1)..]).ToList();
       if (IsSafe1(temp)) return true;
     }
     return false;
@@ -64,8 +64,9 @@ public class Day02
 
   private static bool IsSafe3(List<long> items)
   {
-    var signs = items.Windows(2).Select(w => Math.Sign(w[0] - w[1])).ToList();
-    var sign = signs.GroupBy(it => it).OrderByDescending(it => it.Count()).First().Key;
+    var temp = new int[]{0, 0, 0};
+    foreach (var w in items.Windows(2)) temp[Math.Sign(w[0] - w[1]) + 1]++;
+    var sign = temp[0] > temp[2] ? -1 : 1;
 
     var ws = items.Windows(2).Select(w => IsSafe(w[0], w[1], sign)).ToList();
     var fwsi = ws.Select((it,index)=>(it,index)).Where(it => !it.it).Select(it => it.index).ToList();

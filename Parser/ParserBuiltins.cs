@@ -15,6 +15,7 @@ public static class ParserBuiltins
   public static readonly Parser<int> Digit = Numeral.Select(it => it - '0');
   public static readonly Parser<long> Number = Numeral.Plus().Join().Select(Convert.ToInt64);
 
+
   public static readonly Parser<char> Whitespace = Any.Where(it => char.IsWhiteSpace(it), "IsWhiteSpace");
 
   public static DeferredParser<T> Defer<T>() => new();

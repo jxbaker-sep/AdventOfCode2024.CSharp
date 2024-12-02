@@ -16,4 +16,6 @@ public static class EnumerableExtensions
             if (q.Count == size) yield return q.ToList();
         }
     }
+
+    public static long Product(this IEnumerable<long> self) => self.Aggregate((a,b) => a * b);
 }

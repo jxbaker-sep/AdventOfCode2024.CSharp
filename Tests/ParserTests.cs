@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using AdventOfCode2024.CSharp.Utils;
 using FluentAssertions;
 using Parser;
@@ -8,7 +5,7 @@ using Utils;
 
 using P = Parser.ParserBuiltins;
 
-namespace AdventOfCode2024;
+namespace AdventOfCode2024.CSharp.Tests;
 
 public class ParserTests
 {
@@ -192,8 +189,33 @@ public class ParserTests
     }
 
     [Theory]
+    [InlineData("", 0)]
     [InlineData("1", 1)]
     [InlineData("1,2", 3)]
     [InlineData("1, 2, 3", 6)]
     public void StarWithSeperatorTest(string input, int expected) => P.Number.Star(",").Parse(input).Sum().Should().Be(expected);
+
+    [Theory]
+    [InlineData("1", 1)]
+    [InlineData("1,2", 3)]
+    [InlineData("1, 2, 3", 6)]
+    public void PlusWithSeperatorTest(string input, int expected) => P.Number.Plus(",").Parse(input).Sum().Should().Be(expected);
+
+    [Fact]
+    public void OperatorPlusTest1()
+    {
+        (P.Number.Before(",").Star() + P.Number).Parse("1,2,3").Should().BeEquivalentTo(new List<int>{1,2,3});
+    }
+
+    [Fact]
+    public void OperatorPlusTest3()
+    {
+        (P.Number.Before(",") + P.Number).Parse("1,2").Should().BeEquivalentTo(new List<int>{1,2});
+    }
+
+    [Fact]
+    public void OperatorPlusTest4()
+    {
+        (P.Number.Before(",") + P.Number.Before(",") + P.Number).Parse("1,2,3").Should().BeEquivalentTo(new List<int>{1,2,3});
+    }
 }

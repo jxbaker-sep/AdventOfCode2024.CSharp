@@ -41,7 +41,11 @@ public static class ParserExtensions
   public static RangeParser<T> Range<T>(this Parser<T> parser, int min, int max) => new(parser, min, max);
   public static RangeParser<T> Star<T>(this Parser<T> parser) => new(parser);
 
-  public static Parser<List<T>> Star<T>(this Parser<T> parser, string seperator) => parser.Before(seperator).Star() + parser;
+  public static Parser<List<T>> Plus<T>(this Parser<T> parser, string seperator) => parser + parser.After(seperator).Star();
+  
+
+  public static Parser<List<T>> Star<T>(this Parser<T> parser, string seperator) => parser.Plus(seperator).Optional()
+    .Select(v => v.Count == 0 ? [] : v[0]);
 
   public static RangeParser<T> Plus<T>(this Parser<T> parser) => new(parser, 1);
   public static T Parse<T>(this Parser<T> parser, string x) {
