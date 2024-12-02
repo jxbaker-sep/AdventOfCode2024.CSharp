@@ -1,7 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
 using Utils;
 
 using P = Parser.ParserBuiltins;
@@ -12,12 +8,7 @@ public static class ParserExtensions
 {
   public static Parser<TOut> Select<TIn, TOut>(this Parser<TIn> parser, Func<TIn, TOut> fct)
   {
-    return Parser.From((c, i) => {
-      var m = parser.Parse(c, i);
-      if (m is ParseSuccess<TIn> s) return ParseResult.From(fct(s.Value), s.Data, s.Position);
-      if (m is ParseFailure<TIn> f) return new ParseFailure<TOut>(f.Message, f.Data, i);
-      throw new ApplicationException("This shouldnt happen");
-    });
+    return parser.Then(v => ParseResult.From(fct(v.Value), v.Data, v.Position));
   }
 
   public static Parser<TOut> Then<TIn, TOut>(this Parser<TIn> parser, Func<ParseSuccess<TIn>, IParseResult<TOut>> action)
