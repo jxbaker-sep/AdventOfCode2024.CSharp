@@ -234,4 +234,18 @@ public class ParserTests
     {
         P.Sequence(P.Long, P.Letter, P.Any, P.String("-2-")).Parse("1A*-2-").Should().Be((1, 'A', '*', "-2-"));
     }
+
+    [Fact]
+    public void PeekNotSomeMoreTests()
+    {
+        var x = 
+        P.Sequence(
+            P.String("don't()"),
+            P.Any.PeekNot(P.String("do()")).Star().Join(),
+            P.Any,
+            P.String("do()")
+        );
+        x.ParseOrNullStruct("don't()_mul(5,5)+mul(32,64](mul(11,8)undo()").Should().
+            Be(("don't()", "_mul(5,5)+mul(32,64](mul(11,8)u", 'n', "do()"));
+    }
 }

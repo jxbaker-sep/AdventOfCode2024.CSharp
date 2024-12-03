@@ -33,40 +33,27 @@ public class Day03
         P.Digit.Range(1, 3).Join().Between(P.String(","), P.String(")"))
       )
       .Select(it => Convert.ToInt64(it.First) * Convert.ToInt64(it.Second))
-      | P.Any.Select(_ => 0L)).Star().Select(it => it.Sum()
-    ).Parse(arg1);
+      | P.Any.Select(_ => 0L)
+    ).Star().Select(it => it.Sum())
+    .Parse(arg1);
   }
 
   private long SumMuls2(string arg1)
   {
-    var enabled = true;
-    var c = arg1.ToCharArray();
-    var i = 0;
-    var mulp = P.Sequence(P.Digit.Range(1, 3).Join().After(P.String("mul(")),
-      P.Digit.Range(1, 3).Join().Between(P.String(","), P.String(")")))
-      .Select(it => Convert.ToInt64(it.First) * Convert.ToInt64(it.Second));
-    var dop = P.String("do()");
-    var dontp = P.String("don't()");
-    long sum = 0;
-    while (i < c.Length)
-    {
-      if (dop.Parse(c, i) is ParseSuccess<string> s)
-      {
-        enabled = true;
-        i = s.Position;
-      }
-      else if (dontp.Parse(c, i) is ParseSuccess<string> s2)
-      {
-        enabled = false;
-        i = s2.Position;
-      }
-      else if (mulp.Parse(c, i) is ParseSuccess<long> s3)
-      {
-        sum += enabled ? s3.Value : 0;
-        i = s3.Position;
-      }
-      else { i += 1; }
-    }
-    return sum;
+    return (
+      P.Sequence(
+        P.String("don't()"),
+        P.Any.PeekNot(P.String("do()")).Star(),
+        P.Any,
+        P.String("do()")
+      ).Select(_ => 0L)
+      | P.Sequence(
+        P.Digit.Range(1, 3).Join().After(P.String("mul(")),
+        P.Digit.Range(1, 3).Join().Between(P.String(","), P.String(")"))
+      )
+      .Select(it => Convert.ToInt64(it.First) * Convert.ToInt64(it.Second))
+      | P.Any.Select(_ => 0L)
+    ).Star().Select(it => it.Sum())
+    .Parse(arg1);
   }
 }
