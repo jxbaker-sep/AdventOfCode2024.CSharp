@@ -45,9 +45,9 @@ public class ParserTests
     [Fact]
     public void RangeTest()
     {
-        P.Number.Range(1,3).Join().Parse("12345").Should().Be("123");
-        P.Number.Range(1,10).Join().Parse("12345").Should().Be("12345");
-        P.Number.Range(6,10).Invoking(it => it.Parse("12345")).Should().Throw<ApplicationException>();
+        P.Digit.Range(1,3).Join().Parse("12345").Should().Be("123");
+        P.Digit.Range(1,10).Join().Parse("12345").Should().Be("12345");
+        P.Digit.Range(6,10).Invoking(it => it.Parse("12345")).Should().Throw<ApplicationException>();
     }
 
     [Fact]
@@ -121,7 +121,7 @@ public class ParserTests
     [Fact]
     public void OrTest()
     {
-        var parser = P.Letter | P.Number;
+        var parser = P.Letter | P.Digit;
         parser.Parse("1").Should().Be('1');
         parser.Parse("a").Should().Be('a');
         parser.Parse("B").Should().Be('B');

@@ -7,8 +7,8 @@ public static class ParserBuiltins
 {
   public static readonly Parser<char> Any = new AnyParser();
   public static readonly Parser<char> Letter = Any.Where(char.IsLetter, "IsLetter");
-  public static readonly Parser<char> Number = Any.Where(char.IsNumber, "IsNumber");
-  public static readonly Parser<long> Long = Number.Plus().Join().Select(Convert.ToInt64);
+  public static readonly Parser<char> Digit = Any.Where(char.IsNumber, "IsNumber");
+  public static readonly Parser<long> Long = Digit.Plus().Join().Select(Convert.ToInt64);
 
   public static readonly Parser<char> Whitespace = Any.Where(char.IsWhiteSpace, "IsWhiteSpace");
 
