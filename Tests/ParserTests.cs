@@ -238,14 +238,17 @@ public class ParserTests
     [Fact]
     public void PeekNotSomeMoreTests()
     {
+        var anyThenDo = P.Defer<string>();
+        anyThenDo.Actual = P.String("do()") | P.Any.Then(anyThenDo).Select(it => $"{it.First}" + it.Second);
         var x = 
         P.Sequence(
             P.String("don't()"),
-            P.Any.PeekNot(P.String("do()")).Star().Join(),
-            P.Any,
-            P.String("do()")
-        );
-        x.ParseOrNullStruct("don't()_mul(5,5)+mul(32,64](mul(11,8)undo()").Should().
-            Be(("don't()", "_mul(5,5)+mul(32,64](mul(11,8)u", 'n', "do()"));
+            anyThenDo
+        ).Select(it => it.First + it.Second);
+        x.ParseOrNull("don't()_mul(5,5)+mul(32,64](mul(11,8)undo()").Should().
+            Be("don't()_mul(5,5)+mul(32,64](mul(11,8)undo()");
+
+        x.ParseOrNull("don't()do()").Should().
+            Be("don't()do()");
     }
 }

@@ -40,12 +40,12 @@ public class Day03
 
   private long SumMuls2(string arg1)
   {
+    var anyThenDo = P.Defer<string>();
+    anyThenDo.Actual = P.String("do()") | P.Any.Then(anyThenDo).Select(it => $"{it.First}" + it.Second);
     return (
       P.Sequence(
         P.String("don't()"),
-        P.Any.PeekNot(P.String("do()")).Star(),
-        P.Any,
-        P.String("do()")
+        anyThenDo
       ).Select(_ => 0L)
       | P.Sequence(
         P.Digit.Range(1, 3).Join().After(P.String("mul(")),
