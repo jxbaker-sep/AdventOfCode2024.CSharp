@@ -14,15 +14,15 @@ public static class ParserBuiltins
 
   public static DeferredParser<T> Defer<T>() => new();
 
-  public record Unit { }
+  public record Void { }
 
-  public static readonly Parser<Unit> EndOfInput = Parser.From<Unit>((c, i) =>
+  public static readonly Parser<Void> EndOfInput = Parser.From((c, i) =>
   {
-    if (i == c.Length) return ParseResult.From(new Unit(), c, i);
-    return new ParseFailure<Unit>("Expected end-of-input", c, i);
+    if (i == c.Length) return ParseResult.From(new Void(), c, i);
+    return new ParseFailure<Void>("Expected end-of-input", c, i);
   });
 
-  public static readonly Parser<Unit> EndOfLine = EndOfInput | String("\n").Discard();
+  public static readonly Parser<Void> EndOfLine = EndOfInput | String("\n").Void();
 
   public static Parser<string> String(string s)
   {

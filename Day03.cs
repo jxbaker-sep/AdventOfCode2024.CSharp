@@ -38,10 +38,9 @@ public class Day03
     .Parse(arg1);
   }
 
-  private long SumMuls2(string arg1)
+  private static long SumMuls2(string input)
   {
-    var anyThenDo = P.Defer<string>();
-    anyThenDo.Actual = P.String("do()") | P.Any.Then(anyThenDo).Select(it => $"{it.First}" + it.Second);
+    var anyThenDo = P.Any.Until(P.String("do()"));
     return (
       P.Sequence(
         P.String("don't()"),
@@ -54,6 +53,6 @@ public class Day03
       .Select(it => Convert.ToInt64(it.First) * Convert.ToInt64(it.Second))
       | P.Any.Select(_ => 0L)
     ).Star().Select(it => it.Sum())
-    .Parse(arg1);
+    .Parse(input);
   }
 }

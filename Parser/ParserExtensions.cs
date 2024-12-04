@@ -130,5 +130,26 @@ public static class ParserExtensions
       });
   }
 
-  public static Parser<P.Unit> Discard<T>(this Parser<T> p) => p.Select(_ => new P.Unit());
+  public static Parser<P.Void> Void<T>(this Parser<T> p) => p.Select(_ => new P.Void());
+
+  public static Parser<P.Void> Not<T>(this Parser<T> p) => new EZParser<P.Void>((c, i) => {
+    var v = p.Parse(c, i);
+    if (v is ParseSuccess<T>) return new ParseFailure<P.Void>("'not' failed (think of a better error)", c, i);
+    return ParseResult.From(new P.Void(), c, i);
+  });
+
+  public static Parser<(List<TAccum> Accumulator, TSentinel Sentinel)> Until<TAccum, TSentinel>(this Parser<TAccum> p, Parser<TSentinel> sentinel) => Parser.From((c, i) => {
+    List<TAccum> list = [];
+    while (true) {
+      var v = sentinel.Parse(c, i);
+      if (v is ParseSuccess<TSentinel> s) return ParseResult.From((list, s.Value), c, s.Position);
+      var v2 = p.Parse(c, i);
+      if (v2 is ParseSuccess<TAccum> s2) {
+        list.Add(s2.Value);
+        i = s2.Position;
+        continue;
+      }
+      return ((ParseFailure<TAccum>)v2).As<(List<TAccum> First, TSentinel Second)>();
+    }
+  });
 }

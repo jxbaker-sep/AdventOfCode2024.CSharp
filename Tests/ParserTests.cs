@@ -158,17 +158,17 @@ public class ParserTests
     }")]
     public void JsonParserTest(string jsonData)
     {
-        var anyJsonObject = P.Defer<P.Unit>();
-        var jsonInt = P.Long.Trim().Discard();
-        var jsonFloat = P.Sequence(P.Long.Before("."), P.Long).Trim().Discard();
-        var jsonBool = (P.String("true") | P.String("false")).Trim().Discard();
+        var anyJsonObject = P.Defer<P.Void>();
+        var jsonInt = P.Long.Trim().Void();
+        var jsonFloat = P.Sequence(P.Long.Before("."), P.Long).Trim().Void();
+        var jsonBool = (P.String("true") | P.String("false")).Trim().Void();
         var stringElement = P.Any.After("\\") | P.Any.Where(it => it != '\"');
-        var jsonString = stringElement.Star().Between("\"", "\"").Trim().Discard();
+        var jsonString = stringElement.Star().Between("\"", "\"").Trim().Void();
         var jsonKeyValue = P.Sequence(jsonString.Before(":"), anyJsonObject);
-        var jsonObject = P.Sequence(jsonKeyValue, jsonKeyValue.After(",").Star()).Optional().Between("{", "}").Discard();
+        var jsonObject = P.Sequence(jsonKeyValue, jsonKeyValue.After(",").Star()).Optional().Between("{", "}").Void();
         anyJsonObject.Actual = jsonFloat | jsonInt | jsonBool | jsonString | jsonObject;
 
-        anyJsonObject.Parse(jsonData).Should().Be(new P.Unit());
+        anyJsonObject.Parse(jsonData).Should().Be(new P.Void());
     }
 
     [Theory]
@@ -240,6 +240,38 @@ public class ParserTests
     {
         var anyThenDo = P.Defer<string>();
         anyThenDo.Actual = P.String("do()") | P.Any.Then(anyThenDo).Select(it => $"{it.First}" + it.Second);
+        var x = 
+        P.Sequence(
+            P.String("don't()"),
+            anyThenDo
+        ).Select(it => it.First + it.Second);
+        x.ParseOrNull("don't()_mul(5,5)+mul(32,64](mul(11,8)undo()").Should().
+            Be("don't()_mul(5,5)+mul(32,64](mul(11,8)undo()");
+
+        x.ParseOrNull("don't()do()").Should().
+            Be("don't()do()");
+    }
+
+    [Fact]
+    public void NotTest()
+    {
+        var anyThenDo = P.Any.After(P.String("do()").Not()).Star().Join().Then(P.String("do()")).Select(it => it.First + it.Second);
+        var x = 
+        P.Sequence(
+            P.String("don't()"),
+            anyThenDo
+        ).Select(it => it.First + it.Second);
+        x.ParseOrNull("don't()_mul(5,5)+mul(32,64](mul(11,8)undo()").Should().
+            Be("don't()_mul(5,5)+mul(32,64](mul(11,8)undo()");
+
+        x.ParseOrNull("don't()do()").Should().
+            Be("don't()do()");
+    }
+
+    [Fact]
+    public void UntilTest()
+    {
+        var anyThenDo = P.Any.Until(P.String("do()")).Select(it => it.Accumulator.Join() + it.Sentinel);
         var x = 
         P.Sequence(
             P.String("don't()"),

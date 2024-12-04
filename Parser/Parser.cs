@@ -50,6 +50,11 @@ public abstract class Parser<T>
   public static Parser<List<T>> operator+(Parser<T> lhs, Parser<List<T>> rhs) => ParserBuiltins.Sequence(lhs, rhs).Select(it => new List<T>{it.First}.Concat(it.Second).ToList());
   
   public static Parser<List<T>> operator+(Parser<T> lhs, Parser<T> rhs) => ParserBuiltins.Sequence(lhs, rhs).Select(it => new List<T>{it.First, it.Second});
+
+  public static Parser<string> operator+(Parser<string> lhs, Parser<T> rhs) => ParserBuiltins.Sequence(lhs, rhs).Select(it => $"{it.First}{it.Second}");
+
+  public static Parser<ParserBuiltins.Void> operator+(Parser<ParserBuiltins.Void> lhs, Parser<T> rhs) => ParserBuiltins.Sequence(lhs, rhs).Select(it => it.First);
+
 }
 
 public class EZParser<T>(Func<char[], int, IParseResult<T>> Action) : Parser<T>
