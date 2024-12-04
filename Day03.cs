@@ -40,11 +40,10 @@ public class Day03
 
   private static long SumMuls2(string input)
   {
-    var anyThenDo = P.Any.Until(P.String("do()"));
     return (
       P.Sequence(
         P.String("don't()"),
-        anyThenDo
+        P.Any.Until(P.String("do()"))
       ).Select(_ => 0L)
       | P.Sequence(
         P.Digit.Range(1, 3).Join().After(P.String("mul(")),
