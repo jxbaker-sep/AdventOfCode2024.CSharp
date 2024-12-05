@@ -56,7 +56,7 @@ public class Day02
     if (IsSafe1(items)) return true;
     for (var i = 0; i < items.Count; i++)
     {
-      var temp = items[0..i].Concat(items[(i+1)..]).ToList();
+      List<long> temp = [ .. items[0..i], .. items[(i+1)..] ];
       if (IsSafe1(temp)) return true;
     }
     return false;

@@ -16,8 +16,8 @@ public class Day05
   {
     var data = Convert(AoCLoader.LoadLines(file));
 
-    var x= data.Pages.Where(p => IsCorrectlyOrdered(data.Ordering, p)).ToList();
-    x.Select(it => it[it.Count / 2])
+    data.Pages.Where(p => IsCorrectlyOrdered(data.Ordering, p)).ToList()
+    .Select(it => it[it.Count / 2])
       .Sum().Should().Be(expected);
   }
 
@@ -28,10 +28,48 @@ public class Day05
   {
     var data = Convert(AoCLoader.LoadLines(file));
 
-    var x= data.Pages.Where(p => !IsCorrectlyOrdered(data.Ordering, p))
+    data.Pages.Where(p => !IsCorrectlyOrdered(data.Ordering, p))
       .Select(p => ElfOrder(data.Ordering, p))
-      .ToList();
-    x.Select(it => it[it.Count / 2])
+      .Select(it => it[it.Count / 2])
+      .Sum().Should().Be(expected);
+  }
+
+  [Theory]
+  [InlineData("Day05.Sample", 123)]
+  [InlineData("Day05", 6004)]
+  public void Part2_2(string file, long expected)
+  {
+    var data = Convert(AoCLoader.LoadLines(file));
+
+    data.Pages.Where(p => !IsCorrectlyOrdered(data.Ordering, p))
+      .Select(p => ElfOrder2(data.Ordering, p))
+      .Select(it => it[it.Count / 2])
+      .Sum().Should().Be(expected);
+  }
+
+  [Theory]
+  [InlineData("Day05.Sample", 123)]
+  [InlineData("Day05", 6004)]
+  public void Part2_3(string file, long expected)
+  {
+    var data = Convert(AoCLoader.LoadLines(file));
+
+    data.Pages.Where(p => !IsCorrectlyOrdered(data.Ordering, p))
+      .Select(p => ElfOrder3(data.Ordering, p))
+      .Select(it => it[it.Count / 2])
+      .Sum().Should().Be(expected);
+  }
+
+  [Theory]
+  [InlineData("Day05.Sample", 123)]
+  [InlineData("Day05", 6004)]
+  public void Part2_4(string file, long expected)
+  {
+    var data = Convert(AoCLoader.LoadLines(file));
+
+    data.Pages.Where(p => !IsCorrectlyOrdered(data.Ordering, p))
+      .Select(p => ElfOrder4(data.Ordering, p))
+      .Select(it => it[it.Count / 2])
       .Sum().Should().Be(expected);
   }
 
@@ -40,7 +78,7 @@ public class Day05
     var open = new Queue<long>(pages);
     var closed = new List<long>();
     var reversed = pages.ToDictionary(page => page, 
-      page => ordering.Keys.Where(key => ordering[key].Contains(page) && pages.Contains(key)).ToList());
+      page => ordering.Keys.Where(key => ordering[key].Contains(page) && pages.Contains(key)).ToHashSet());
 
     while (open.TryDequeue(out var current)) {
       if (reversed[current].All(it => closed.Contains(it)))
@@ -54,17 +92,78 @@ public class Day05
     return closed;
   }
 
+  private static List<long> ElfOrder2(Dictionary<long, List<long>> ordering, List<long> pages)
+  {
+    var open = new Queue<long>(pages);
+    var result = new List<long>();
+    var reversed = pages.ToDictionary(page => page, 
+      page => ordering.Where(kv => kv.Value.Contains(page) && pages.Contains(kv.Key)).Select(it => it.Key).ToHashSet());
+
+    while (result.Count != pages.Count) {
+      var first = reversed.Single(kv => kv.Value.Count == 0).Key;
+      result.Add(first);
+      reversed.Remove(first);
+      foreach(var kv in reversed) kv.Value.Remove(first);
+    }
+
+    return result;
+  }
+
+  private static List<long> ElfOrder3(Dictionary<long, List<long>> ordering, List<long> pages)
+  {
+    Cache.Clear();
+    var filteredOrdering = ordering.Where(kv => pages.Contains(kv.Key)).ToDictionary(kv => kv.Key, kv => kv.Value.Intersect(pages).ToList());
+    var absolute = pages.ToDictionary(page => page, page => CreateAbsoluteOrdering(page, filteredOrdering));
+
+    pages.Sort((a,b) => absolute[a].Contains(b) ? -1 : ((a == b) ? 0 : 1));
+    return pages;
+  }
+
+  private static List<long> ElfOrder4(Dictionary<long, List<long>> ordering, List<long> pages)
+  {
+    var open = new Stack<long>(pages);
+    var closed = new List<long>();
+    var reversed = pages.ToDictionary(page => page, 
+      page => ordering.Keys.Where(key => ordering[key].Contains(page) && pages.Contains(key)).ToHashSet());
+
+    while (open.TryPeek(out var current)) {
+      if (closed.Contains(current)) {
+        open.Pop();
+        continue;
+      }
+      if (reversed[current].All(it => closed.Contains(it)))
+      {
+        open.Pop();
+        closed.Add(current);
+      } else {
+        foreach(var prereq in reversed[current]) open.Push(prereq);
+      }
+    }
+
+    return closed;
+  }
+
+  private static readonly Dictionary<long, List<long>> Cache = [];
+
+  private static List<long> CreateAbsoluteOrdering(long page, Dictionary<long, List<long>> filteredOrdering)
+  {
+    if (Cache.GetValueOrDefault(page) is {} cached) return cached;
+    var rule = filteredOrdering.GetValueOrDefault(page) ?? [];
+    List<long> result = [];
+    foreach(var item in rule) {
+      if (result.Contains(item)) continue;
+      result = [ .. result, item, .. CreateAbsoluteOrdering(item, filteredOrdering)];
+    }
+    Cache[page] = result;
+    return result;
+  }
+
   private static bool IsCorrectlyOrdered(Dictionary<long, List<long>> ordering, List<long> pages)
   {
     var closed = new HashSet<long>();
     foreach(var page in pages)
     {
-      var rules = ordering.GetValueOrDefault(page);
-      if (rules is not {})
-      {
-        closed.Add(page);
-        continue;
-      }
+      var rules = ordering.GetValueOrDefault(page) ?? [];
       if (rules.Any(closed.Contains)) return false;
       closed.Add(page);
     }
