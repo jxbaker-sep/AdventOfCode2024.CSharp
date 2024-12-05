@@ -84,7 +84,7 @@ public class Day02
     return IsSafe(items[fwsi[0]], items[fwsi[0] + 2], sign);
   }
 
-  private static List<List<long>> Convert(string[] data)
+  private static List<List<long>> Convert(List<string> data)
   {
     return data.Select(it => P.Long.Trim().Plus().Parse(it)).ToList();
   }

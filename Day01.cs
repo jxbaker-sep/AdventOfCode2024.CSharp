@@ -34,7 +34,7 @@ public class Day01
             .Should().Be(expected);
     }
 
-    private static (List<long>, List<long>) Convert(string[] data)
+    private static (List<long>, List<long>) Convert(List<string> data)
     {
         var temp = data.Select(it => (P.Long.Trim() + P.Long).Parse(it)).ToList();
         return (

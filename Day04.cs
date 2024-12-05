@@ -67,5 +67,5 @@ public class Day04
     return true;
   }
 
-  private List<List<char>> Convert(string[] strings) => strings.Select(it => it.ToCharArray().ToList()).ToList();
+  private static List<List<char>> Convert(List<string> strings) => strings.Select(it => it.ToCharArray().ToList()).ToList();
 }
