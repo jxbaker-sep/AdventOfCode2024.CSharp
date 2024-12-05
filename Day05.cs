@@ -17,14 +17,14 @@ public class Day05
     var data = Convert(AoCLoader.LoadLines(file));
 
     data.Pages.Where(p => IsCorrectlyOrdered(data.Ordering, p)).ToList()
-    .Select(it => it[it.Count / 2])
+      .Select(it => it[it.Count / 2])
       .Sum().Should().Be(expected);
   }
 
   [Theory]
   [InlineData("Day05.Sample", 123)]
   [InlineData("Day05", 6004)]
-  public void Part2(string file, long expected)
+  public void Part2_1(string file, long expected)
   {
     var data = Convert(AoCLoader.LoadLines(file));
 
@@ -79,7 +79,7 @@ public class Day05
     var closed = new List<long>();
     var reversed = pages.ToDictionary(page => page, 
       page => ordering.Keys.Where(key => ordering[key].Contains(page) && pages.Contains(key)).ToHashSet());
-
+    
     while (open.TryDequeue(out var current)) {
       if (reversed[current].All(it => closed.Contains(it)))
       {
@@ -88,7 +88,7 @@ public class Day05
         open.Enqueue(current);
       }
     }
-
+    
     return closed;
   }
 
