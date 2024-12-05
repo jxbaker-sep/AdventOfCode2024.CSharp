@@ -1,5 +1,5 @@
 
-using AdventOfCode2024.CSharp.TestInputs;
+using AdventOfCode2024.CSharp.Utils.TestInputs;
 using FluentAssertions;
 using Parser;
 using Utils;
@@ -75,10 +75,10 @@ public class Day05
   {
     var p1 = input.TakeWhile(it => it.Length > 0).Select(P.Long.Before("|").Then(P.Long).Parse);
     var p2 = input.SkipWhile(it => it.Length > 0).Skip(1).ToList();
-    var map = p1.GroupBy(it => it.First).ToDictionary(it => it.Key, it => it.Select(z=>z.Second).ToList());
+    var map = p1.GroupBy(it => it.First, it => it.Second).ToDictionary(it => it.Key, it => it.ToList());
     return new(
       map,
-      p2.Select(it => P.Long.Star(",").Parse(it)).ToList()
+      p2.Select(P.Long.Star(",").Parse).ToList()
     );
   }
 }
