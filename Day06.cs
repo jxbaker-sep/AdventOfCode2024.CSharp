@@ -43,12 +43,12 @@ public class Day06
     count.Should().Be(expected);
   }
 
-  private static (HashSet<(Point, Point)>, bool) Walk(Day06Input data)
+  private static (HashSet<(Point, Vector)>, bool) Walk(Day06Input data)
   {
     var v = data.StartingVector;
     var current = data.Start;
 
-    HashSet<(Point, Point)> visited = [(data.Start, v)];
+    HashSet<(Point, Vector)> visited = [(data.Start, v)];
     while (true)
     {
       var next = current + v;
@@ -71,6 +71,6 @@ public class Day06
     var result = input.SelectMany((line, row) => line.Select((c, col) => (new Point(row, col), c)));
     return new(result.Where(it => it.c == '#').Select(it => it.Item1).ToHashSet(),
             result.Single(it => it.c == '^').Item1,
-            input.Count, input[0].Length, Point.North);
+            input.Count, input[0].Length, Vector.North);
   }
 }

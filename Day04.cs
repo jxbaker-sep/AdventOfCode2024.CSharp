@@ -1,3 +1,4 @@
+using AdventOfCode2024.CSharp.Utils;
 using FluentAssertions;
 using Utils;
 
@@ -17,14 +18,14 @@ public class Day04
     {
       for (var x = 0; x < data[0].Count; x++)
       {
-        count += CanRead("XMAS", y, x, data, Point.East) ? 1 : 0;
-        count += CanRead("XMAS", y, x, data, Point.SouthEast) ? 1 : 0;
-        count += CanRead("XMAS", y, x, data, Point.South) ? 1 : 0;
-        count += CanRead("XMAS", y, x, data, Point.SouthWest) ? 1 : 0;
-        count += CanRead("XMAS", y, x, data, Point.West) ? 1 : 0;
-        count += CanRead("XMAS", y, x, data, Point.NorthWest) ? 1 : 0;
-        count += CanRead("XMAS", y, x, data, Point.North) ? 1 : 0;
-        count += CanRead("XMAS", y, x, data, Point.NorthEast) ? 1 : 0;
+        count += CanRead("XMAS", y, x, data, Vector.East) ? 1 : 0;
+        count += CanRead("XMAS", y, x, data, Vector.SouthEast) ? 1 : 0;
+        count += CanRead("XMAS", y, x, data, Vector.South) ? 1 : 0;
+        count += CanRead("XMAS", y, x, data, Vector.SouthWest) ? 1 : 0;
+        count += CanRead("XMAS", y, x, data, Vector.West) ? 1 : 0;
+        count += CanRead("XMAS", y, x, data, Vector.NorthWest) ? 1 : 0;
+        count += CanRead("XMAS", y, x, data, Vector.North) ? 1 : 0;
+        count += CanRead("XMAS", y, x, data, Vector.NorthEast) ? 1 : 0;
       }
     }
 
@@ -43,10 +44,10 @@ public class Day04
     {
       for (var x = 0; x < data[0].Count; x++)
       {
-        if ((CanRead("MAS", y, x, data, Point.SouthEast) ||
-             CanRead("SAM", y, x, data, Point.SouthEast)) &&
-            (CanRead("MAS", y, x + 2, data, Point.SouthWest) ||
-             CanRead("SAM", y, x + 2, data, Point.SouthWest)))
+        if ((CanRead("MAS", y, x, data, Vector.SouthEast) ||
+             CanRead("SAM", y, x, data, Vector.SouthEast)) &&
+            (CanRead("MAS", y, x + 2, data, Vector.SouthWest) ||
+             CanRead("SAM", y, x + 2, data, Vector.SouthWest)))
           count += 1;
       }
     }
@@ -54,7 +55,7 @@ public class Day04
     count.Should().Be(expected);
   }
 
-  private bool CanRead(string s, int y, int x, List<List<char>> data, Point v)
+  private static bool CanRead(string s, int y, int x, List<List<char>> data, Vector v)
   {
     for (int i = 0; i < s.Length; i++)
     {
