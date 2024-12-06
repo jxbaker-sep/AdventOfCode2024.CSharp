@@ -8,6 +8,8 @@ using P = Parser.ParserBuiltins;
 
 namespace AdventOfCode2024.CSharp.Day06;
 
+record Foo(int i);
+
 public class Day06
 {
   [Theory]
@@ -30,14 +32,14 @@ public class Day06
     var originalPath = Walk(data).Item1;
 
     var count = 0;
-    HashSet<Point> tried = [data.Start];
+    HashSet<Point> tried = [data.Start, ..data.World];
     foreach(var (point, vector) in originalPath)
     {
       var next = point + vector;
       if (next.Y < 0 || next.Y >= data.Height || next.X < 0 || next.X >= data.Width) continue;
       if (tried.Contains(next)) continue;
       tried.Add(next);
-      if (Walk(data with {World = data.World.Append(next).ToHashSet(), Start = point, StartingVector = vector}).Item2) count += 1;
+      if (Walk(data with {World = [.. data.World, next], Start = point, StartingVector = vector}).Item2) count += 1;
     }
 
     count.Should().Be(expected);
