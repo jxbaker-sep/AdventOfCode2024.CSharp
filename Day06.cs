@@ -1,5 +1,6 @@
 
 using AdventOfCode2024.CSharp.Utils;
+using AdventOfCode2024.CSharp.Utils.TestInputs;
 using FluentAssertions;
 using Parser;
 using Utils;
@@ -36,20 +37,15 @@ public class Day06
       if (next.Y < 0 || next.Y >= data.Height || next.X < 0 || next.X >= data.Width) continue;
       if (tried.Contains(next)) continue;
       tried.Add(next);
-      var original = data.World.ToHashSet();
-      data.World.Add(next);
-
-      if (Walk(data).Item2) count += 1;
-
-      data.World = original;
+      if (Walk(data with {World = data.World.Append(next).ToHashSet(), Start = point, StartingVector = vector}).Item2) count += 1;
     }
 
     count.Should().Be(expected);
   }
 
-  private static (HashSet<(Point, Point)>, bool) Walk((HashSet<Point> World, Point Start, int Height, int Width) data)
+  private static (HashSet<(Point, Point)>, bool) Walk(Day06Input data)
   {
-    var v = Point.North;
+    var v = data.StartingVector;
     var current = data.Start;
 
     HashSet<(Point, Point)> visited = [(data.Start, v)];
@@ -70,11 +66,11 @@ public class Day06
     return (visited, false);
   }
 
-  private static (HashSet<Point> World, Point Start, int Height, int Width) FormatInput(List<string> input)
+  private static Day06Input FormatInput(List<string> input)
   {
     var result = input.SelectMany((line, row) => line.Select((c, col) => (new Point(row, col), c)));
-    return (result.Where(it => it.c == '#').Select(it => it.Item1).ToHashSet(),
+    return new(result.Where(it => it.c == '#').Select(it => it.Item1).ToHashSet(),
             result.Single(it => it.c == '^').Item1,
-            input.Count, input[0].Length);
+            input.Count, input[0].Length, Point.North);
   }
 }
