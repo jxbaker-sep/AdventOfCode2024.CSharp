@@ -73,6 +73,19 @@ public class Day05
       .Sum().Should().Be(expected);
   }
 
+  [Theory]
+  [InlineData("Day05.Sample", 123)]
+  [InlineData("Day05", 6004)]
+  public void Part2_5(string file, long expected)
+  {
+    var data = Convert(AoCLoader.LoadLines(file));
+
+    data.Pages.Where(p => !IsCorrectlyOrdered(data.Ordering, p))
+      .Select(p => ElfOrder5(data.Ordering, p))
+      .Select(it => it[it.Count / 2])
+      .Sum().Should().Be(expected);
+  }
+
   private static List<long> ElfOrder(Dictionary<long, List<long>> ordering, List<long> pages)
   {
     var open = new Queue<long>(pages);
@@ -141,6 +154,26 @@ public class Day05
     }
 
     return closed;
+  }
+
+  private static List<long> ElfOrder5(Dictionary<long, List<long>> ordering, List<long> pages)
+  {
+    var rules = new List<(long First,long Second)>(ordering.SelectMany(kv => kv.Value.Select(v => (kv.Key, v))));
+    // open is now the original list of X|Y rule pairs again.
+    // Filter the list to contain only rules that reference pages
+    rules = rules.Where(it => pages.Contains(it.First) && pages.Contains(it.Second)).ToList();
+    List<long> result = [];
+
+    while (rules.Count != 0) {
+      var firsts = rules.Select(rule => rule.First).ToHashSet();
+      var seconds = rules.Select(rule => rule.Second).ToHashSet();
+      // find the single page with no prerequisites
+      var page = firsts.Except(seconds).Single();
+      result.Add(page);
+      rules = rules.Where(it => it.First != page).ToList();
+    }
+
+    return result;
   }
 
   private static readonly Dictionary<long, List<long>> Cache = [];
