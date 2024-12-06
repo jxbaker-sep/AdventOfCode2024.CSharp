@@ -15,9 +15,9 @@ public class Day06
   public void Part1(string file, int expected)
   {
     var data = FormatInput(AoCLoader.LoadLines(file));
-    HashSet<Point> visited = Walk(data).Item1;
+    var visited = Walk(data).Item1;
 
-    visited.Count.Should().Be(expected);
+    visited.Select(it => it.Item1).ToHashSet().Count.Should().Be(expected);
   }
 
   [Theory]
@@ -26,21 +26,22 @@ public class Day06
   public void Part2(string file, int expected)
   {
     var data = FormatInput(AoCLoader.LoadLines(file));
+    var originalPath = Walk(data).Item1;
 
     var count = 0;
-    for (var y = 0; y < data.Height; y++)
+    HashSet<Point> tried = [data.Start];
+    foreach(var (point, vector) in originalPath)
     {
-      for (var x = 0; x < data.Width; x++)
-      {
-        if (data.World.Contains(new(y,x))) continue;
-        if (data.Start == new Point(y,x)) continue;
-        var original = data.World.ToHashSet();
-        data.World.Add(new Point(y,x));
+      var next = point + vector;
+      if (next.Y < 0 || next.Y >= data.Height || next.X < 0 || next.X >= data.Width) continue;
+      if (tried.Contains(next)) continue;
+      tried.Add(next);
+      var original = data.World.ToHashSet();
+      data.World.Add(next);
 
-        if (Walk(data).Item2) count += 1;
+      if (Walk(data).Item2) count += 1;
 
-        data.World = original;
-      }
+      data.World = original;
     }
 
     count.Should().Be(expected);
@@ -58,6 +59,7 @@ public class Day06
       if (data.World.Contains(next))
       {
         v = v.RotateRight();
+        visited.Add((current, v));
         continue;
       }
       current = next;
