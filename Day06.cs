@@ -1,14 +1,10 @@
 
 using AdventOfCode2024.CSharp.Utils;
-using AdventOfCode2024.CSharp.Utils.TestInputs;
 using FluentAssertions;
 using Parser;
 using Utils;
-using P = Parser.ParserBuiltins;
 
 namespace AdventOfCode2024.CSharp.Day06;
-
-record Foo(int i);
 
 public class Day06
 {
