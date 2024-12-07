@@ -14,7 +14,7 @@ public class Day07
   public void Part1(string file, long expected)
   {
     var input = FormatInput(AoCLoader.LoadLines(file));
-    input.Select(Compute).OfType<long>().Sum()
+    input.Where(it => TestReverse(it.Test, it.Terms.ToArray(), false)).Select(it => it.Test).Sum()
       .Should().Be(expected);
   }
 
@@ -24,62 +24,30 @@ public class Day07
   public void Part2(string file, long expected)
   {
     var input = FormatInput(AoCLoader.LoadLines(file));
-    input.Select(Compute2).OfType<long>().Sum()
+    input.Where(it => TestReverse(it.Test, it.Terms.ToArray(), true)).Select(it => it.Test).Sum()
       .Should().Be(expected);
   }
 
-  private long? Compute((long Test, List<long> Terms) input)
+  private static bool TestReverse(long test, Span<long> terms, bool includeConcat)
   {
-    var permutations = PermuteOperators(input.Terms.Count - 1);
-    var x = permutations.Select(perm => Compute1(input.Terms, perm, input.Test)).ToList();
-     var y = x.FirstOrDefault(result => result == input.Test);
-     return y;
-  }
-
-  private long? Compute2((long Test, List<long> Terms) input)
-  {
-    var permutations = PermuteOperators(input.Terms.Count - 1);
-    var x = permutations.Select(perm => Compute1(input.Terms, perm, input.Test) as long?)
-      .FirstOrDefault(result => result == input.Test);
-    if (x != null) return x;
-    permutations = PermuteOperators2(input.Terms.Count - 1);
-    return permutations.Select(perm => Compute1(input.Terms, perm, input.Test))
-      .FirstOrDefault(result => result == input.Test);
-  }
-
-  private static long Compute1(List<long> terms, List<Func<long, long, long>> perm, long test)
-  {
-    var result = terms[0];
-    foreach(var (term, operation) in terms.Skip(1).Zip(perm)) {
-      result = operation(result, term);
-      if (result > test) return 0;
+    if (terms.Length == 0) return test == 0;
+    if (terms.Length == 1) return test == terms[0];
+    if (test <= 0) return false;
+    var term = terms[^1];
+    if (includeConcat) {
+      var ts = $"{test}";
+      var tt = $"{term}";
+      if (ts.EndsWith(tt)) 
+        if (TestReverse(ts.Length == tt.Length ? 0 : Convert.ToInt64(ts[..^tt.Length]), terms[..^1], includeConcat))
+          return true;
     }
-    return result;
+    if (test % term == 0)
+      if (TestReverse(test / term, terms[..^1], includeConcat))
+        return true;
+    return TestReverse(test - term, terms[..^1], includeConcat);
   }
 
-  private static List<List<Func<long, long, long>>> PermuteOperators(int length)
-  {
-    static long add(long a, long b) => a + b;
-    static long mul(long a, long b) => a * b;
-    if (length == 0) return [ [] ];
-    var next = PermuteOperators(length -1);
-    return next.SelectMany(it => new List<List<Func<long, long, long>>>([ [ ..it, add ], [ ..it, mul ] ]))
-      .ToList();
-  }
-
-  private static List<List<Func<long, long, long>>> PermuteOperators2(int length)
-  {
-    static long add(long a, long b) => a + b;
-    static long mul(long a, long b) => a * b;
-    static long concat(long a, long b) => Convert.ToInt64($"{a}{b}");
-    if (length == 0) return [ [] ];
-    var next = PermuteOperators2(length -1);
-    return next.SelectMany(it => new List<List<Func<long, long, long>>>([ [ ..it, add ], 
-    [ ..it, mul ], [ ..it, concat ] ]))
-      .ToList();
-  }
-
-  private static List<(long, List<long>)> FormatInput(List<string> input)
+  private static List<(long Test, List<long> Terms)> FormatInput(List<string> input)
   {
     return input.Select(P.Long.Before(":").Then(P.Long.Trim().Star()).Parse).ToList();
   }
