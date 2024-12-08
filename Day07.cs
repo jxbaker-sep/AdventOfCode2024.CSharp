@@ -28,7 +28,7 @@ public class Day07
       .Should().Be(expected);
   }
 
-  private static bool TestReverse(long test, Span<long> terms, bool includeConcat)
+  private static bool TestReverse(long test, ReadOnlySpan<long> terms, bool includeConcat)
   {
     if (terms.Length == 0) return test == 0;
     if (terms.Length == 1) return test == terms[0];
