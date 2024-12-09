@@ -55,23 +55,24 @@ public class Day09
   private static List<Record> Compress2(List<Record> input)
   {
     var files = input.Where(it => it.Id != -1).ToDictionary(it => it.Id, it => it);
-    var free = input.Where(it => it.Id == -1).Select(it => (it.Index, it.Length)).ToHashSet();
+    var free = new LinkedList<(int Index, int Length)>(input.Where(it => it.Id == -1).Select(it => (it.Index, it.Length)).OrderBy(it=>it.Index));
 
     for(var id = input.Select(it => it.Id).Max(); id >= 0; id--)
     {
       var file = files[id];
-      free.RemoveWhere(it => it.Index >= file.Index);
-      var freeSpans = free.Where(it => it.Length >= file.Length).OrderBy(it => it.Index).Take(1).ToList();
-      if (freeSpans.Count == 0) continue;
-      var freeSpan = freeSpans[0];
+      var needle = free.Nodes()
+        .TakeWhile(node => node.Value.Index < file.Index)
+        .SkipWhile(node => node.Value.Length < file.Length)
+        .FirstOrDefault();
+      if (needle == null) continue;
 
-      files[id] = file with {Index = freeSpan.Index}; 
+      files[id] = file with {Index = needle.Value.Index}; 
 
-      free.Remove(freeSpan);
-      if (freeSpan.Length > file.Length)
+      if (needle.Value.Length > file.Length)
       {
-        free.Add((freeSpan.Index + file.Length, freeSpan.Length - file.Length));
+        free.AddAfter(needle, (needle.Value.Index + file.Length, needle.Value.Length - file.Length));
       }
+      free.Remove(needle);
     }
 
     return [.. files.Values];
