@@ -1,3 +1,4 @@
+using AdventOfCode2024.CSharp.Utils;
 using FluentAssertions;
 using Utils;
 
@@ -8,7 +9,7 @@ public class UtilsTests
   [Fact]
   public void WindowTests()
   {
-    var input = new List<int>{1,2,3};
+    var input = new List<int> { 1, 2, 3 };
     input.Windows(0).Should().BeEquivalentTo(new List<List<int>>{
       new List<int>{}, new List<int>{}, new List<int>{}
     });
@@ -25,7 +26,7 @@ public class UtilsTests
       new List<int>{1,2,3}
     });
 
-    input = new List<int>{1,2,3,4,5};
+    input = new List<int> { 1, 2, 3, 4, 5 };
     input.Windows(3).Should().BeEquivalentTo(new List<List<int>>{
       new List<int>{1,2,3},
       new List<int>{2,3,4},
@@ -42,6 +43,15 @@ public class UtilsTests
       (2,3), (2,4), (2,5),
       (3,4), (3,5),
       (4,5)
-  });
+    });
   }
+
+  [Theory]
+  [InlineData(1, 1)]
+  [InlineData(2, 3)]
+  [InlineData(3, 6)]
+  [InlineData(4, 10)]
+  [InlineData(5, 15)]
+  [InlineData(6, 21)]
+  public void TriangleTest(long x, long expected) => MathUtils.Triangle(x).Should().Be(expected);
 }

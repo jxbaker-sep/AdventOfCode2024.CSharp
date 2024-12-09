@@ -23,17 +23,17 @@ public class Day09
   [InlineData("Day09", 6227018762750L)]
   public void Part2(string file, long expected)
   {
-    var input = FormatInput(AoCLoader.LoadLines(file));
+    var input = FormatInput2(AoCLoader.LoadLines(file));
     var compressed = Compress2(input);
-    Checksum(compressed).Should().Be(expected);
+    compressed.Select(it => (it.Index * it.Length + MathUtils.Triangle(it.Length - 1)) * it.Id ).Sum().Should().Be(expected);
   }
 
-  private long Checksum(List<long> compressed)
+  private static long Checksum(List<long> compressed)
   {
     return compressed.Select((it, index) => it == -1 ? 0 : it * index).Sum();
   }
 
-  private List<long> Compress1(List<long> input)
+  private static List<long> Compress1(List<long> input)
   {
     var head = 0;
     var tail = input.Count - 1;
@@ -52,49 +52,29 @@ public class Day09
     return input;
   }
 
-  private List<long> Compress2(List<long> input)
+  private static List<Record> Compress2(List<Record> input)
   {
-    Dictionary<long, (int index, int length)> files = [];
-    HashSet<(int index, int length)> free = [];
+    var files = input.Where(it => it.Id != -1).ToDictionary(it => it.Id, it => it);
+    var free = input.Where(it => it.Id == -1).Select(it => (it.Index, it.Length)).ToHashSet();
 
-    var i = 1;
-    var current = (index: 0, length: 1, id: input[0]);
-    while (i < input.Count)
-    {
-      if (input[i] == current.id) {
-        current = (current.index, length: current.length + 1, current.id);
-        i ++;
-        continue;
-      }
-      if (current.id == -1) free.Add((current.index, current.length));
-      else files[current.id] = (current.index, current.length);
-      current = (index: i, length: 1, id: input[i]);
-      i++;
-    }
-    // make sure to add to the last one
-    if (current.id == -1) free.Add((current.index, current.length));
-    else files[current.id] = (current.index, current.length);
-
-    for(var id = input.Max(); id >= 0; id--)
+    for(var id = input.Select(it => it.Id).Max(); id >= 0; id--)
     {
       var file = files[id];
-      free.RemoveWhere(it => it.index >= file.index);
-      var freeSpans = free.Where(it => it.length >= file.length).OrderBy(it => it.index).Take(1).ToList();
+      free.RemoveWhere(it => it.Index >= file.Index);
+      var freeSpans = free.Where(it => it.Length >= file.Length).OrderBy(it => it.Index).Take(1).ToList();
       if (freeSpans.Count == 0) continue;
       var freeSpan = freeSpans[0];
-      for(var x = 0; x < file.length; x++)
-      {
-        input[freeSpan.index + x] = id;
-        input[file.index + x] = -1;
-      }
+
+      files[id] = file with {Index = freeSpan.Index}; 
+
       free.Remove(freeSpan);
-      if (freeSpan.length > file.length)
+      if (freeSpan.Length > file.Length)
       {
-        free.Add((freeSpan.index + file.length, freeSpan.length - file.length));
+        free.Add((freeSpan.Index + file.Length, freeSpan.Length - file.Length));
       }
     }
 
-    return input;
+    return [.. files.Values];
   }
 
   private static List<long> FormatInput(List<string> input)
@@ -111,6 +91,26 @@ public class Day09
         result.AddRange(Enumerable.Repeat(-1L, item));
       }
       isFile = !isFile;
+    }
+    return result;
+  }
+
+  private static List<Record> FormatInput2(List<string> input)
+  {
+    var line = input.Single().Select(it => Convert.ToInt32($"{it}"));
+    var id = 0L;
+    var result = new List<Record>();
+    var isFile = true;
+    var index = 0;
+    foreach(var item in line) {
+      if (isFile) {
+        result.Add(new(index, item, id));
+        id += 1;
+      } else {
+        result.Add(new(index, item, -1L));
+      }
+      isFile = !isFile;
+      index += item;
     }
     return result;
   }
