@@ -47,6 +47,7 @@ public class UtilsTests
   }
 
   [Theory]
+  [InlineData(0, 0)]
   [InlineData(1, 1)]
   [InlineData(2, 3)]
   [InlineData(3, 6)]
