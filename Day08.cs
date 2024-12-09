@@ -10,7 +10,7 @@ public class Day08
 {
   [Theory]
   [InlineData("Day08.Sample", 14)]
-  [InlineData("Day08", 0)]
+  [InlineData("Day08", 423)]
   public void Part1(string file, int expected)
   {
     var input = FormatInput(AoCLoader.LoadLines(file));
@@ -40,11 +40,11 @@ public class Day08
         var v = a.VectorTo(b);
         var a1 = b + v;
         var a2 = a - v;
-        if (a1.Y >= 0 && a1.Y < input.Height && a1.X >= 0 && a1.X < input.Width)
+        if (OnMap(a1, input))
         {
           antinodes.Add(a1);
         }
-        if (a2.Y >= 0 && a2.Y < input.Height && a2.X >= 0 && a2.X < input.Width)
+        if (OnMap(a2, input))
         {
           antinodes.Add(a2);
         }
