@@ -78,7 +78,8 @@ public class Day09
     for(var id = input.Max(); id >= 0; id--)
     {
       var file = files[id];
-      var freeSpans = free.Where(it => it.length >= file.length && it.index < file.index).OrderBy(it => it.index).Take(1).ToList();
+      free.RemoveWhere(it => it.index >= file.index);
+      var freeSpans = free.Where(it => it.length >= file.length).OrderBy(it => it.index).Take(1).ToList();
       if (freeSpans.Count == 0) continue;
       var freeSpan = freeSpans[0];
       for(var x = 0; x < file.length; x++)
@@ -91,7 +92,6 @@ public class Day09
       {
         free.Add((freeSpan.index + file.length, freeSpan.length - file.length));
       }
-      free.Add((file.index, file.length));
     }
 
     return input;
