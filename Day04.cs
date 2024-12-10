@@ -2,7 +2,7 @@ using AdventOfCode2024.CSharp.Utils;
 using FluentAssertions;
 using Utils;
 
-using Point = AdventOfCode2024.CSharp.Utils.Point;
+namespace AdventOfCode2024.CSharp.Day04;
 
 public class Day04
 {
@@ -18,14 +18,7 @@ public class Day04
     {
       for (var x = 0; x < data[0].Count; x++)
       {
-        count += CanRead("XMAS", y, x, data, Vector.East) ? 1 : 0;
-        count += CanRead("XMAS", y, x, data, Vector.SouthEast) ? 1 : 0;
-        count += CanRead("XMAS", y, x, data, Vector.South) ? 1 : 0;
-        count += CanRead("XMAS", y, x, data, Vector.SouthWest) ? 1 : 0;
-        count += CanRead("XMAS", y, x, data, Vector.West) ? 1 : 0;
-        count += CanRead("XMAS", y, x, data, Vector.NorthWest) ? 1 : 0;
-        count += CanRead("XMAS", y, x, data, Vector.North) ? 1 : 0;
-        count += CanRead("XMAS", y, x, data, Vector.NorthEast) ? 1 : 0;
+        count += Vector.CompassPoints.Count(v => CanRead("XMAS", y, x, data, v));
       }
     }
 
