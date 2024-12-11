@@ -26,25 +26,25 @@ public class Day10
     ScoreTrailheads2(input).Should().Be(expected);
   }
 
-  private int ScoreTrailheads(Dictionary<Point, int> input)
+  private static int ScoreTrailheads(Dictionary<Point, int> input)
   {
-    Dictionary<Point, HashSet<Point>> Cache = [];
-    foreach(var trailhead in input.Where(kv => kv.Value == 0)) {
-      ReachablePeaks(input, trailhead.Key, Cache);
-    }
-    return input.Where(kv => kv.Value == 0).Select(kv => Cache[kv.Key].Count).Sum();
+    Dictionary<Point, HashSet<Point>> cache = [];
+
+    return input.Where(kv => kv.Value == 0)
+      .Select(it => ReachablePeaks(input, it.Key, cache).Count)
+      .Sum();
   }
 
-  private int ScoreTrailheads2(Dictionary<Point, int> input)
+  private static int ScoreTrailheads2(Dictionary<Point, int> input)
   {
     Dictionary<Point, int> cache = [];
-    foreach(var trailhead in input.Where(kv => kv.Value == 0)) {
-      CountPaths(input, trailhead.Key, cache);
-    }
-    return input.Where(kv => kv.Value == 0).Select(kv => cache[kv.Key]).Sum();
+
+    return input.Where(kv => kv.Value == 0)
+      .Select(it => CountPaths(input, it.Key, cache))
+      .Sum();
   }
 
-  private HashSet<Point> ReachablePeaks(Dictionary<Point, int> input, Point point, Dictionary<Point, HashSet<Point>> cache)
+  private static HashSet<Point> ReachablePeaks(Dictionary<Point, int> input, Point point, Dictionary<Point, HashSet<Point>> cache)
   {
     if (cache.TryGetValue(point, out var v)) return v;
     if (input[point] == 9)
@@ -64,7 +64,7 @@ public class Day10
     return result;
   }
 
-  private int CountPaths(Dictionary<Point, int> input, Point point, Dictionary<Point, int> cache)
+  private static int CountPaths(Dictionary<Point, int> input, Point point, Dictionary<Point, int> cache)
   {
     if (cache.TryGetValue(point, out var v)) return v;
     if (input[point] == 9)
