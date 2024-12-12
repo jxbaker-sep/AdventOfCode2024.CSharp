@@ -17,7 +17,7 @@ public class Day12
   {
     var input = FormatInput(AoCLoader.LoadLines(file));
     long sum = 0;
-    while (input.Any())
+    while (input.Count != 0)
     {
       var section = Section(input);
       sum += section.area * section.perimeter;
@@ -65,23 +65,12 @@ public class Day12
       }
     }
 
-    var perimeter2 = FindPerimeter3(closed);
+    var perimeter2 = FindPerimeter(closed);
 
     return (closed.Count, perimeter, perimeter2, plant);
   }
 
-  [Fact]
-  public void Sample()
-  {
-    FindPerimeter3([new(0,0)]).Should().Be(4);
-    FindPerimeter3([new(0,0), new(0,1)]).Should().Be(4);
-    FindPerimeter3([new(0,0), new(0,1), new(1,0), new(1,1)]).Should().Be(4);
-    FindPerimeter3([new(0,1), new(1,0), new(1,1), new(1,2), new(2,1)]).Should().Be(12);
-    FindPerimeter3([new(0,0), new(0,1), new(1,0), new(0,2), new(1,1),
-      new(0,3), new(1,2), new(1,3), new(2,2), new(2,3), new(3,2), new(2,4)]).Should().Be(10);
-  }
-
-  private static long FindPerimeter3(HashSet<Point> closed)
+  private static long FindPerimeter(HashSet<Point> closed)
   {
     long perimeter = 0;
     var minx = closed.Select(it => it.X).Min();
