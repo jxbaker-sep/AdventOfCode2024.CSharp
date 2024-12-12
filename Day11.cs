@@ -9,16 +9,17 @@ namespace AdventOfCode2024.CSharp.Day11;
 public class Day11
 {
   [Theory]
-  [InlineData("Day11.Sample", 25, 55312)]
-  [InlineData("Day11", 25, 202019L)]
-  [InlineData("Day11", 75, 239321955280205L)]
+  [InlineData("Day11.Sample", 25, 55_312)]
+  [InlineData("Day11.Sample", 75, 65_601_038_650_482L)]
+  [InlineData("Day11", 25, 202_019L)]
+  [InlineData("Day11", 75, 239_321_955_280_205L)]
   public void Part1(string file, int blinks, long expected)
   {
     var input = FormatInput(AoCLoader.LoadLines(file));
     input.Select(it => NumberOfStonesAfterBlinking(it, blinks)).Sum().Should().Be(expected);
   }
 
-  Dictionary<(long, int), long> Cache = [];
+  readonly Dictionary<(long, int), long> Cache = [];
   private long NumberOfStonesAfterBlinking(long value, int blinksRemaining)
   {
     if (blinksRemaining == 0) return 1;

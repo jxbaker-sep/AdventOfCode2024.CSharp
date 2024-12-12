@@ -21,4 +21,5 @@ public record Vector(long Y, long X) {
   public static Vector operator+(Vector v1, Vector v2) => new(v1.Y + v2.Y, v1.X + v2.X);
 
   internal Vector RotateRight() => new(X, -Y);
+  internal Vector RotateLeft() => new(-X, Y);
 }

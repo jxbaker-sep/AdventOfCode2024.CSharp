@@ -161,7 +161,7 @@ public class ParserTests
         var anyJsonObject = P.Defer<P.Void>();
         var jsonInt = P.Long.Trim().Void();
         var jsonFloat = P.Sequence(P.Long.Before("."), P.Long).Trim().Void();
-        var jsonBool = (P.String("true") | P.String("false")).Trim().Void();
+        var jsonBool = P.Choice("true", "false").Trim().Void();
         var stringElement = P.Any.After("\\") | P.Any.Where(it => it != '\"');
         var jsonString = stringElement.Star().Between("\"", "\"").Trim().Void();
         var jsonKeyValue = P.Sequence(jsonString.Before(":"), anyJsonObject);
@@ -283,4 +283,34 @@ public class ParserTests
         x.ParseOrNull("don't()do()").Should().
             Be("don't()do()");
     }
+
+    [Theory]
+    [InlineData("PO nn-nnnn")]
+    [InlineData("PO-nn-nnnn")]
+    [InlineData("PO# nn nnnn")]
+    [InlineData("PO#nn-nnnn")]
+    [InlineData("PO nnnnnn")]
+    public void PoMatcherTest(string format)
+    {
+        Random rnd = new();
+        var actual = format.Select(it => it != 'n' ? (char)it : (char)((char)rnd.Next(0,10) + '0')).Join();
+
+        var parser = P.Sequence(
+            P.String("PO"), 
+            P.Choice("#", "-").Optional().Trim(),
+            P.Digit.Range(2, 2),
+            P.String("-").Optional().Trim(),
+            P.Digit.Range(4, 4))
+            .End()
+            .Void();
+
+        parser.ParseOrNull(actual).Should().NotBeNull();
+    }
+
+    [Fact]
+    public void EmptyStringTest() => P.String("").ParseOrNull("Abc").Should().NotBeNull();
+
+    // [Fact]
+    // public void EightBitNumberTest() => 
+    //     P.Sequence(P.Digit(2), P
 }

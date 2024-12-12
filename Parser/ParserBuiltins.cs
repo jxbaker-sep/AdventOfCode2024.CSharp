@@ -48,4 +48,21 @@ public static class ParserBuiltins
     return Sequence(p1, p2, p3).Then(p4)
       .Select(it => (it.First.First, it.First.Second, it.First.Third, it.Second));
   }
+
+  public static Parser<(T1 First, T2 Second, T3 Third, T4 Fourth, T5 Fifth)> Sequence<T1, T2, T3, T4, T5>(Parser<T1> p1, Parser<T2> p2, Parser<T3> p3, Parser<T4> p4, Parser<T5> p5)
+  {
+    return Sequence(p1, p2, p3, p4).Then(p5)
+      .Select(it => (it.First.First, it.First.Second, it.First.Third, it.First.Fourth, it.Second));
+  }
+
+  public static Parser<string> Choice(params string[] choices)
+  {
+    return choices.Select(it => String(it)).Aggregate((a, b) => a | b);
+  }
+
+  public static Parser<T> Format<T>(string format, Parser<T> p1) {
+    var parts = format.Split("{}");
+    if (parts.Length != 2) throw new ApplicationException("Format error");
+    return p1.Between(String(parts[0]), String(parts[1]));
+  }
 }
