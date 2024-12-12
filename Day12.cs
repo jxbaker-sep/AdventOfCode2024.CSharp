@@ -88,15 +88,17 @@ public class Day12
     var miny = closed.Select(it => it.Y).Min();
     var maxx = closed.Select(it => it.X).Max();
     var maxy = closed.Select(it => it.Y).Max();
-    for (var y = miny; y <= maxy; y++)
+
+    var ys = Enumerable.Range((int)miny, (int)(maxy - miny + 1)).Select(y => (new Point(y, minx), Vector.East));
+    var xs = Enumerable.Range((int)minx, (int)(maxx - minx + 1)).Select(x => (new Point(miny, x), Vector.South));
+
+    foreach(var (start, vector) in ys.Concat(xs))
     {
       var wallOnLeft = false;
       var wallOnRight = false;
-      var current = new Point(y, minx);
-      var vector = Vector.East;
       var left = vector.RotateLeft();
       var right = vector.RotateRight();
-      for (; current.X <= maxx; current += vector)
+      for (var current = start; current.X <= maxx && current.Y <= maxy; current += vector)
       {
         if (!closed.Contains(current)) {
           wallOnLeft = false;
@@ -118,35 +120,6 @@ public class Day12
       }
     }
 
-    for (var x = minx; x <= maxx; x++)
-    {
-      var wallOnLeft = false;
-      var wallOnRight = false;
-      var current = new Point(miny, x);
-      var vector = Vector.South;
-      var left = vector.RotateLeft();
-      var right = vector.RotateRight();
-      for (; current.Y <= maxy; current += vector)
-      {
-        if (!closed.Contains(current)) {
-          wallOnLeft = false;
-          wallOnRight = false;
-          continue;
-        }
-        if (!closed.Contains(current + left))
-        {
-          if (!wallOnLeft) perimeter += 1;
-          wallOnLeft = true;
-        }
-        else wallOnLeft = false;
-        if (!closed.Contains(current + right))
-        {
-          if (!wallOnRight) perimeter += 1;
-          wallOnRight = true;
-        }
-        else wallOnRight = false;
-      }
-    }
     return perimeter;
   }
 
