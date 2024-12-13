@@ -1,9 +1,12 @@
 using System.Collections.Generic;
+using System.Net;
 
 namespace Utils;
 
 public static class EnumerableExtensions
 {
+  public static long Product(this IEnumerable<long> self) => self.Aggregate(1L, (a,b) => a * b);
+
   public static string Join<T>(this IEnumerable<T> objects, string joiner = "") => string.Join(joiner, objects);
 
   public static IEnumerable<List<T>> Windows<T>(this IEnumerable<T> self, int size)
@@ -29,5 +32,13 @@ public static class EnumerableExtensions
     }
   }
 
-  public static long Product(this IEnumerable<long> self) => self.Aggregate((a, b) => a * b);
+  public static List<T> RemoveCommon<T>(this IReadOnlyList<T> self, IReadOnlyList<T> other)
+  {
+    var result = self.ToList();
+    foreach(var item in other)
+    {
+      result.Remove(item);
+    }
+    return result;
+  }
 }
