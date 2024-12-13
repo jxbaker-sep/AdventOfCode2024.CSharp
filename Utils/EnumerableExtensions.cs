@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Net;
+using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 
 namespace Utils;
 
@@ -40,5 +41,23 @@ public static class EnumerableExtensions
       result.Remove(item);
     }
     return result;
+  }
+
+  public static IEnumerable<long> OrderedIntersect(this IEnumerable<long> self, IEnumerable<long> other) {
+    var lhs = self.GetEnumerator();
+    var rhs = other.GetEnumerator();
+    if (!lhs.MoveNext()) yield break;
+    if (!rhs.MoveNext()) yield break;
+
+    while (true) {
+      if (lhs.Current < rhs.Current) {if (!lhs.MoveNext()) yield break; continue;}
+      if (lhs.Current > rhs.Current) {if (!rhs.MoveNext()) yield break; continue;}
+      if (lhs.Current == rhs.Current) {
+        yield return lhs.Current;
+        if (!lhs.MoveNext()) yield break;
+        if (!rhs.MoveNext()) yield break;
+        continue;
+      }
+    }
   }
 }

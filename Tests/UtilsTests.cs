@@ -58,5 +58,14 @@ namespace AdventOfCode2024.CSharp.Tests
     {
       MathUtils.Triangle(x).Should().Be(expected);
     }
+
+    [Fact]
+    public void OrderedIntersect()
+    {
+      new[]{1L,2L}.OrderedIntersect(new[]{3L}).Should().BeEmpty();
+      new[]{1L,1L}.OrderedIntersect(new[]{1L, 2L}).Should().BeEquivalentTo([1L]);
+      new[]{1L,1L}.OrderedIntersect(new[]{1L, 1L}).Should().BeEquivalentTo([1L, 1L]);
+      new[]{1L,2L,3L,5L}.OrderedIntersect(new[]{3L,4L,5L}).Should().BeEquivalentTo([3L, 5L]);
+    }
   }
 }

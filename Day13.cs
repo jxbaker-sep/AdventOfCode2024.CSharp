@@ -18,30 +18,29 @@ public class Day13
   public void Part1(string file, long expected)
   {
     var input = FormatInput(AoCLoader.LoadLines(file));
-    input.Select(MinTokensToWin).Sum().Should().Be(expected);
+    input.Select(it => MinTokensToWin(it)).Sum().Should().Be(expected);
   }
 
-  // [Theory]
-  // [InlineData("Day13.Sample", 0)]
-  // // [InlineData("Day13", 35574L)]
-  // public void Part2(string file, long expected)
-  // {
-  //   var input = FormatInput(AoCLoader.LoadLines(file));
-  //   input.Select(MinTokensToWin2).Sum().Should().Be(expected);
-  // }
-
-  private long MinTokensToWin(Machine machine)
+  [Theory]
+  [InlineData("Day13.Sample", 0)]
+  // [InlineData("Day13", 0L)] // 474697749331L too low
+  public void Part2(string file, long expected)
   {
-    var x= WinningTokensAlongAxis(machine.A.X, machine.B.X, machine.Prize.X)
-      .Intersect(WinningTokensAlongAxis(machine.A.Y, machine.B.Y, machine.Prize.Y))
-      .Order()
+    var input = FormatInput(AoCLoader.LoadLines(file));
+    input.Select(it => MinTokensToWin(it, 10000000000000)).Sum().Should().Be(expected);
+  }
+
+  private static long MinTokensToWin(Machine machine, long prizeOffset = 0)
+  {
+    var x = WinningTokensAlongAxis(machine.A.X, machine.B.X, machine.Prize.X + prizeOffset, prizeOffset == 0)
+      .OrderedIntersect(WinningTokensAlongAxis(machine.A.Y, machine.B.Y, machine.Prize.Y + prizeOffset, prizeOffset == 0))
       .Take(1)
       .ToList();
     if (x.Count == 1) return x[0];
     return 0;
   }
 
-  private IEnumerable<long> WinningTokensAlongAxis(long x1, long x2, long prize, bool max100 = true)
+  private static IEnumerable<long> WinningTokensAlongAxis(long x1, long x2, long prize, bool max100 = true)
   {
     // var max1 = prize / x1;
     // if (max100) max1 = new[]{max1, 100}.Min();
@@ -52,28 +51,43 @@ public class Day13
     //   if (max100 && press2 > 100) continue;
     //   yield return press1 * 3 + press2;
     // }
-    var x11 = x1;
-    var x22 = x2;
     var factorsa = MathUtils.Factorize(x1);
     var factorsb = MathUtils.Factorize(x2);
     var tempa = factorsa;
     var tempb = factorsb;
     factorsa = factorsa.RemoveCommon(factorsb);
     factorsb = tempb.RemoveCommon(tempa);
-    x1 = factorsa.Product();
-    x2 = factorsb.Product();
+    var stepb = factorsa.Product();
+    var stepa = factorsb.Product();
 
     var maxa = prize / x1;
     if (max100 && maxa > 100) maxa = 100;
 
-    for (var a = 0L; a <= maxa ; a++) {
-      var subprize = prize - a * x11;
-      if (subprize % x22 == 0)
+    for (var a = 0L; a <= maxa; a++)
+    {
+      var subprize = prize - a * x1;
+      if (subprize % x2 == 0)
       {
-        var b = subprize / x22;
+        var b = subprize / x2;
         if (max100 && b > 100) continue;
-        for (; a <= maxa && b >= 0; a += x2, b -= x1) {
-          yield return a * 3 + b;
+        if (stepa * 3 > stepb)
+        {
+          for (; a <= maxa && b >= 0; a += stepa, b -= stepb)
+          {
+            yield return a * 3 + b;
+          }
+        }
+        else
+        {
+          var max_b = b;
+          a += stepa * ((maxa-a) / stepa);
+          b = (prize - a * x1) / x2;
+          if (max100) b.Should().BeLessThanOrEqualTo(100);
+          ((prize - a * x1) % x2).Should().Be(0);
+          for (; a >= 0 && b <= max_b; a -= stepa, b += stepb)
+          {
+            yield return a * 3 + b;
+          }
         }
         yield break;
       }
