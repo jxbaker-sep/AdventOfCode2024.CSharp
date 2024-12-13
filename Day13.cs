@@ -18,80 +18,42 @@ public class Day13
   public void Part1(string file, long expected)
   {
     var input = FormatInput(AoCLoader.LoadLines(file));
-    input.Select(it => MinTokensToWin(it)).Sum().Should().Be(expected);
+    input.Select(it => Prize(it)).Sum().Should().Be(expected);
   }
 
   [Theory]
-  [InlineData("Day13.Sample", 0)]
-  // [InlineData("Day13", 0L)] // 474697749331L too low
+  [InlineData("Day13.Sample", 875318608908L)]
+  [InlineData("Day13", 0L)] // 474697749331L too low, 81356796472639 too high
   public void Part2(string file, long expected)
   {
     var input = FormatInput(AoCLoader.LoadLines(file));
-    input.Select(it => MinTokensToWin(it, 10000000000000)).Sum().Should().Be(expected);
+    var scale = 10000000000000;
+    input.Select(it => Prize((it.A, it.B, new Point(it.Prize.Y + scale, it.Prize.X + scale)))).Sum().Should().Be(expected);
   }
 
-  private static long MinTokensToWin(Machine machine, long prizeOffset = 0)
+
+  static long Prize(Machine machine)
   {
-    var x = WinningTokensAlongAxis(machine.A.X, machine.B.X, machine.Prize.X + prizeOffset, prizeOffset == 0)
-      .OrderedIntersect(WinningTokensAlongAxis(machine.A.Y, machine.B.Y, machine.Prize.Y + prizeOffset, prizeOffset == 0))
-      .Take(1)
-      .ToList();
-    if (x.Count == 1) return x[0];
-    return 0;
-  }
+    var ax = machine.A.X;
+    var ay = machine.A.Y;
+    var bx = machine.B.X;
+    var by = machine.B.Y;
+    var px = machine.Prize.X;
+    var py = machine.Prize.Y;
 
-  private static IEnumerable<long> WinningTokensAlongAxis(long x1, long x2, long prize, bool max100 = true)
-  {
-    // var max1 = prize / x1;
-    // if (max100) max1 = new[]{max1, 100}.Min();
-    // for(var press1 = 0; press1 <= max1; press1++) {
-    //   var even = (prize - x1 * press1) % x2 == 0;
-    //   if (!even) continue;
-    //   var press2 = (prize - press1 * x1) / x2;
-    //   if (max100 && press2 > 100) continue;
-    //   yield return press1 * 3 + press2;
-    // }
-    var factorsa = MathUtils.Factorize(x1);
-    var factorsb = MathUtils.Factorize(x2);
-    var tempa = factorsa;
-    var tempb = factorsb;
-    factorsa = factorsa.RemoveCommon(factorsb);
-    factorsb = tempb.RemoveCommon(tempa);
-    var stepb = factorsa.Product();
-    var stepa = factorsb.Product();
+    // a = (5400*22)-(67*8400) / ((22*34) + (-94*67))
+    var d1 = py * bx - by * px;
+    var d2 = bx * ay - ax * by;
+    var a = Math.DivRem(d1, d2, out var remainder);
 
-    var maxa = prize / x1;
-    if (max100 && maxa > 100) maxa = 100;
-
-    for (var a = 0L; a <= maxa; a++)
+    if (remainder != 0)
     {
-      var subprize = prize - a * x1;
-      if (subprize % x2 == 0)
-      {
-        var b = subprize / x2;
-        if (max100 && b > 100) continue;
-        if (stepa * 3 > stepb)
-        {
-          for (; a <= maxa && b >= 0; a += stepa, b -= stepb)
-          {
-            yield return a * 3 + b;
-          }
-        }
-        else
-        {
-          var max_b = b;
-          a += stepa * ((maxa-a) / stepa);
-          b = (prize - a * x1) / x2;
-          if (max100) b.Should().BeLessThanOrEqualTo(100);
-          ((prize - a * x1) % x2).Should().Be(0);
-          for (; a >= 0 && b <= max_b; a -= stepa, b += stepb)
-          {
-            yield return a * 3 + b;
-          }
-        }
-        yield break;
-      }
+      return 0;
     }
+
+    var b = (px - ax * a) / bx;
+
+    return 3 * a + 1 * b;
   }
 
   private static List<Machine> FormatInput(List<string> input)
