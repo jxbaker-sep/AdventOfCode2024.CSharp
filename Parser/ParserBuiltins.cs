@@ -75,7 +75,7 @@ public static class ParserBuiltins
     );
   }
 
-  public static Parser<(T1 First, T2 Second, T3 Third)> Format<T1, T2, T3, T4>(string format, Parser<T1> p1, Parser<T2> p2, Parser<T3> p3) {
+  public static Parser<(T1 First, T2 Second, T3 Third)> Format<T1, T2, T3>(string format, Parser<T1> p1, Parser<T2> p2, Parser<T3> p3) {
     var parts = format.Split("{}");
     if (parts.Length != 4) throw new ApplicationException("Format error");
     return Sequence(

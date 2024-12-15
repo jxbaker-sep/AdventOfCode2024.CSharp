@@ -60,4 +60,6 @@ public static class EnumerableExtensions
       }
     }
   }
+
+  public static Dictionary<T1, T2> Clone<T1, T2>(this Dictionary<T1, T2> self) where T1 : notnull => self.ToDictionary(it => it.Key, it => it.Value);
 }

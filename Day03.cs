@@ -25,13 +25,10 @@ public class Day03
     SumMuls2(data.Join(" ")).Should().Be(expected);
   }
 
-  private long SumMuls(string arg1)
+  private static long SumMuls(string arg1)
   {
     return (
-      P.Sequence(
-        P.Digit.Range(1, 3).Join().After(P.String("mul(")),
-        P.Digit.Range(1, 3).Join().Between(P.String(","), P.String(")"))
-      )
+      P.Format("mul({},{})", P.Digit.Range(1, 3).Join(), P.Digit.Range(1, 3).Join())
       .Select(it => Convert.ToInt64(it.First) * Convert.ToInt64(it.Second))
       | P.Any.Select(_ => 0L)
     ).Star().Select(it => it.Sum())
@@ -45,11 +42,8 @@ public class Day03
         P.String("don't()"),
         P.Any.Until(P.String("do()"))
       ).Select(_ => 0L)
-      | P.Sequence(
-        P.Digit.Range(1, 3).Join().After(P.String("mul(")),
-        P.Digit.Range(1, 3).Join().Between(P.String(","), P.String(")"))
-      )
-      .Select(it => Convert.ToInt64(it.First) * Convert.ToInt64(it.Second))
+      | P.Format("mul({},{})", P.Digit.Range(1, 3).Join(), P.Digit.Range(1, 3).Join())
+         .Select(it => Convert.ToInt64(it.First) * Convert.ToInt64(it.Second))
       | P.Any.Select(_ => 0L)
     ).Star().Select(it => it.Sum())
     .Parse(input);

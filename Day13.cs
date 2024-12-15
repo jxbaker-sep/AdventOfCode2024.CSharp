@@ -56,9 +56,9 @@ public class Day13
 
   private static List<Machine> FormatInput(List<string> input)
   {
-    var button = P.Sequence(P.Long.After(P.Any.Between("Button ", ": X+")), P.Long.After(", Y+")).Trim()
-      .Select(it => new Vector(it.Second, it.First));
-    var prize = P.Sequence(P.Long.After("Prize: X="), P.Long.After(", Y=")).Trim()
+    var button = P.Format("Button {}: X+{}, Y+{}", P.Any, P.Long, P.Long)
+      .Select(it => new Vector(it.Third, it.Second));
+    var prize = P.Format("Prize: X={}, Y={}", P.Long, P.Long)
       .Select(it => new Point(it.Second, it.First));
     var machine = P.Sequence(button, button, prize);
     return machine.Star().End().Parse(input.Join("\n"));
