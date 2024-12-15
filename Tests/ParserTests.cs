@@ -310,7 +310,11 @@ public class ParserTests
     [Fact]
     public void EmptyStringTest() => P.String("").ParseOrNull("Abc").Should().NotBeNull();
 
-    // [Fact]
-    // public void EightBitNumberTest() => 
-    //     P.Sequence(P.Digit(2), P
+    [Fact]
+    public void FormatTest()
+    {
+        P.Format("{}", P.Long).Parse("123").Should().Be(123);
+        P.Format("Before{}After", P.Long).Parse("Before 123 After").Should().Be(123);
+        P.Format("Before{}After{}Ending", P.Long, P.Long).Parse("Before 123 After 345 Ending").Should().Be((123, 345));
+    }
 }

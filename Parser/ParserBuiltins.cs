@@ -8,7 +8,7 @@ public static class ParserBuiltins
   public static readonly Parser<char> Any = new AnyParser();
   public static readonly Parser<char> Letter = Any.Where(char.IsLetter, "IsLetter");
   public static readonly Parser<char> Digit = Any.Where(char.IsNumber, "IsNumber");
-  public static readonly Parser<long> Long = Digit.Plus().Join().Select(Convert.ToInt64);
+  public static readonly Parser<long> Long = String("-").Optional().Then(Digit.Plus()).Select(it => Convert.ToInt64($"{it.First.FirstOrDefault()}{it.Second.Join()}"));
 
   public static readonly Parser<char> Whitespace = Any.Where(char.IsWhiteSpace, "IsWhiteSpace");
 
@@ -63,6 +63,36 @@ public static class ParserBuiltins
   public static Parser<T> Format<T>(string format, Parser<T> p1) {
     var parts = format.Split("{}");
     if (parts.Length != 2) throw new ApplicationException("Format error");
-    return p1.Between(String(parts[0]), String(parts[1]));
+    return p1.Between(parts[0].Trim(), parts[1].Trim());
+  }
+
+  public static Parser<(T1 First, T2 Second)> Format<T1, T2>(string format, Parser<T1> p1, Parser<T2> p2) {
+    var parts = format.Split("{}");
+    if (parts.Length != 3) throw new ApplicationException("Format error");
+    return Sequence(
+      p1.Between(parts[0].Trim(), parts[1].Trim()), 
+      p2.Before(parts[2].Trim())
+    );
+  }
+
+  public static Parser<(T1 First, T2 Second, T3 Third)> Format<T1, T2, T3, T4>(string format, Parser<T1> p1, Parser<T2> p2, Parser<T3> p3) {
+    var parts = format.Split("{}");
+    if (parts.Length != 4) throw new ApplicationException("Format error");
+    return Sequence(
+      p1.Between(parts[0].Trim(), parts[1].Trim()), 
+      p2.Before(parts[2].Trim()),
+      p3.Before(parts[3].Trim())
+    );
+  }
+
+  public static Parser<(T1 First, T2 Second, T3 Third, T4 Fourth)> Format<T1, T2, T3, T4>(string format, Parser<T1> p1, Parser<T2> p2, Parser<T3> p3, Parser<T4> p4) {
+    var parts = format.Split("{}");
+    if (parts.Length != 5) throw new ApplicationException("Format error");
+    return Sequence(
+      p1.Between(parts[0].Trim(), parts[1].Trim()), 
+      p2.Before(parts[2].Trim()),
+      p3.Before(parts[3].Trim()),
+      p4.Before(parts[4].Trim())
+    );
   }
 }

@@ -23,7 +23,7 @@ public class Day13
 
   [Theory]
   [InlineData("Day13.Sample", 875318608908L)]
-  [InlineData("Day13", 0L)] // 474697749331L too low, 81356796472639 too high
+  [InlineData("Day13", 80882098756071)] // 474697749331L too low, 81356796472639 too high
   public void Part2(string file, long expected)
   {
     var input = FormatInput(AoCLoader.LoadLines(file));
@@ -31,29 +31,27 @@ public class Day13
     input.Select(it => Prize((it.A, it.B, new Point(it.Prize.Y + scale, it.Prize.X + scale)))).Sum().Should().Be(expected);
   }
 
-
   static long Prize(Machine machine)
   {
+    var priceX = machine.Prize.X;
+    var priceY = machine.Prize.Y;
+
     var ax = machine.A.X;
-    var ay = machine.A.Y;
     var bx = machine.B.X;
+    var ay = machine.A.Y;
     var by = machine.B.Y;
-    var px = machine.Prize.X;
-    var py = machine.Prize.Y;
 
-    // a = (5400*22)-(67*8400) / ((22*34) + (-94*67))
-    var d1 = py * bx - by * px;
-    var d2 = bx * ay - ax * by;
-    var a = Math.DivRem(d1, d2, out var remainder);
+    var det = ax * by - bx * ay;
 
-    if (remainder != 0)
-    {
-      return 0;
-    }
+    if (det == 0) return 0; // No solution or infinite solutions
 
-    var b = (px - ax * a) / bx;
+    var pressA = (priceX * by - priceY * bx) / det;
+    var pressB = (priceY * ax - priceX * ay) / det;
 
-    return 3 * a + 1 * b;
+    if (pressA >= 0 && pressB >= 0 && ((priceX * by - priceY * bx) % det == 0) && ((priceY * ax - priceX * ay) % det == 0))
+        return (pressA * 3) + pressB;
+
+    return 0;
   }
 
   private static List<Machine> FormatInput(List<string> input)

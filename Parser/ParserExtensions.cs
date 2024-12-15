@@ -61,6 +61,8 @@ public static class ParserExtensions
     if (m is ParseSuccess<T> r) return r.Value;
     throw new ApplicationException((m as ParseFailure<T>)!.Message);
   }
+
+  public static List<T> ParseMany<T>(this Parser<T> parser, List<string> x) => x.Select(parser.Parse).ToList();
     
   public static T? ParseOrNull<T>(this Parser<T> parser, string x) where T: class {
     var m = parser.Parse(x.ToCharArray(), 0);
