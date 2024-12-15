@@ -49,6 +49,6 @@ public class Day07
 
   private static List<(long Test, List<long> Terms)> FormatInput(List<string> input)
   {
-    return input.Select(P.Long.Before(":").Then(P.Long.Trim().Star()).Parse).ToList();
+    return input.Select(P.Format("{}: {}", P.Long, P.Long.Trim().Star()).Parse).ToList();
   }
 }

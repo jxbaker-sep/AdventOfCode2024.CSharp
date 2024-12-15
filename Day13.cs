@@ -33,8 +33,8 @@ public class Day13
 
   static long Prize(Machine machine)
   {
-    var priceX = machine.Prize.X;
-    var priceY = machine.Prize.Y;
+    var px = machine.Prize.X;
+    var py = machine.Prize.Y;
 
     var ax = machine.A.X;
     var bx = machine.B.X;
@@ -45,10 +45,10 @@ public class Day13
 
     if (det == 0) return 0; // No solution or infinite solutions
 
-    var pressA = (priceX * by - priceY * bx) / det;
-    var pressB = (priceY * ax - priceX * ay) / det;
+    var pressA = (px * by - py * bx) / det;
+    var pressB = (py * ax - px * ay) / det;
 
-    if (pressA >= 0 && pressB >= 0 && ((priceX * by - priceY * bx) % det == 0) && ((priceY * ax - priceX * ay) % det == 0))
+    if (pressA >= 0 && pressB >= 0 && ((px * by - py * bx) % det == 0) && ((py * ax - px * ay) % det == 0))
         return (pressA * 3) + pressB;
 
     return 0;

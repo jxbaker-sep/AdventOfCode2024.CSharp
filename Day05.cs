@@ -205,7 +205,7 @@ public class Day05
 
   private static Day05Input Convert(List<string> input)
   {
-    var p1 = input.TakeWhile(it => it.Length > 0).Select(P.Long.Before("|").Then(P.Long).Parse);
+    var p1 = input.TakeWhile(it => it.Length > 0).Select(P.Format("{}|{}", P.Long, P.Long).Parse);
     var p2 = input.SkipWhile(it => it.Length > 0).Skip(1).ToList();
     var map = p1.GroupBy(it => it.First, it => it.Second).ToDictionary(it => it.Key, it => it.ToList());
     return new(
