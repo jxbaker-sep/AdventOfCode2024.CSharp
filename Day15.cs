@@ -50,7 +50,8 @@ public class Day15
 
     foreach(var v in world.Instructions) {
       var next = current + v;
-      if (TryPushBig(world.Grid, next, v)) {
+      if (TryPushBig(world.Grid, next, v, out var temp)) {
+        world = world with {Grid = temp};
         current = next;
       }
       // Print(world.Grid, current);
@@ -104,16 +105,18 @@ public class Day15
     throw new ApplicationException();
   }
 
-  public bool TryPushBig(Dictionary<Point, char> grid, Point p, Vector v) {
+  public bool TryPushBig(Dictionary<Point, char> grid, Point p, Vector v, out Dictionary<Point, char> result) {
     var c = grid[p];
+    result = grid;
     if (c == Wall) return false;
     if (c == Empty) return true;
     if (c == BigBoxLeft || c == BigBoxRight) {
       if (v == Vector.East || v == Vector.West) {
         // same as before
-        if (TryPushBig(grid, p + v, v)) {
-          grid[p+v] = c;
-          grid[p] = Empty;
+        if (TryPushBig(grid, p + v, v, out var temp)) {
+          result = temp;
+          result[p+v] = c;
+          result[p] = Empty;
           return true;
         }
         return false;
@@ -122,12 +125,12 @@ public class Day15
         // push both ends of the block
         var p2 = c == BigBoxLeft ? (p + Vector.East) : (p + Vector.West);
         var clone = grid.Clone();
-        if (TryPushBig(clone, p + v, v) && TryPushBig(clone, p2 + v, v)) {
-          foreach(var (key, value) in clone) grid[key] = value;
-          grid[p + v] = c;
-          grid[p2 + v] = c == BigBoxLeft ? BigBoxRight : BigBoxLeft;
-          grid[p] = Empty;
-          grid[p2] = Empty;
+        if (TryPushBig(clone, p + v, v, out var t2) && TryPushBig(t2, p2 + v, v, out var t3)) {
+          result = t3;
+          t3[p + v] = c;
+          t3[p2 + v] = c == BigBoxLeft ? BigBoxRight : BigBoxLeft;
+          t3[p] = Empty;
+          t3[p2] = Empty;
           return true;
         }
         return false;
