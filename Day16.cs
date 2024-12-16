@@ -111,7 +111,7 @@ public class Day16
         if (CostToStart.TryGetValue((next.Point, next.Vector), out var existing) && existing <= next.Score) continue;
         CostToStart[(next.Point, next.Vector)] = next.Score;
         if (lowestScore < next.Score) continue;
-        if (world[next.Point] == Start) continue;
+        if (world[next.Point] == End) continue;
         open.Enqueue((next.Point, next.Vector));
       }
     }
