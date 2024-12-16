@@ -37,7 +37,6 @@ public class Day16
 
     var open = new PriorityQueue<(Point Point, Vector Vector, long Score, List<Point> Path)>(it => it.Score);
     open.Enqueue((start, Vector.East, 0, [start]));
-    // HashSet<Point> closed = [start, .. world.Where(kv => kv.Value == Wall).Select(it => it.Key)];
     Dictionary<(Point, Vector), long> closed = [];
     closed[(start, Vector.East)] = 0;
 
@@ -52,14 +51,14 @@ public class Day16
       if (closed[(current.Point, current.Vector)] < current.Score) continue;
       foreach(var next in new[]{
         (current.Point + current.Vector, current.Vector, current.Score + 1),
-        (current.Point, current.Vector.RotateLeft(), current.Score + 1000),
-        (current.Point, current.Vector.RotateRight(), current.Score + 1000),
+        (current.Point + current.Vector.RotateLeft(), current.Vector.RotateLeft(), current.Score + 1001),
+        (current.Point + current.Vector.RotateRight(), current.Vector.RotateRight(), current.Score + 1001),
       }) {
         if (world[next.Item1] == Wall) continue;
         if (closed.TryGetValue((next.Item1, next.Item2), out var existing) && existing <= next.Item3) continue;
         closed[(next.Item1, next.Item2)] = next.Item3;
         var nextPath = current.Path.ToList();
-        if (next.Item2 == current.Vector) nextPath.Add(next.Item1);
+        nextPath.Add(next.Item1);
         open.Enqueue((next.Item1, next.Item2, next.Item3, nextPath));
       }
     }
