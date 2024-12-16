@@ -70,20 +70,20 @@ public class Day15
     foreach(var (key, value) in grid)
     {
       if (value == Wall) {
-        result[new(key.Y, key.X * 2)] = Wall;
-        result[new(key.Y, key.X * 2 + 1)] = Wall;
+        result[key with {X = key.X * 2}] = Wall;
+        result[key with {X = key.X * 2 + 1}] = Wall;
       }
       else if (value == SmallBox) {
-        result[new(key.Y, key.X * 2)] = BigBoxLeft;
-        result[new(key.Y, key.X * 2 + 1)] = BigBoxRight;
+        result[key with {X = key.X * 2}] = BigBoxLeft;
+        result[key with {X = key.X * 2 + 1}] = BigBoxRight;
       }
       else if (value == Empty) {
-        result[new(key.Y, key.X * 2)] = Empty;
-        result[new(key.Y, key.X * 2 + 1)] = Empty;
+        result[key with {X = key.X * 2}] = Empty;
+        result[key with {X = key.X * 2 + 1}] = Empty;
       }
       else if (value == Robot) {
-        result[new(key.Y, key.X * 2)] = Robot;
-        result[new(key.Y, key.X * 2 + 1)] = Empty;
+        result[key with {X = key.X * 2}] = Robot;
+        result[key with {X = key.X * 2 + 1}] = Empty;
       }
       else throw new ApplicationException();
     }
@@ -127,10 +127,10 @@ public class Day15
         var clone = grid.Clone();
         if (TryPushBig(clone, p + v, v, out var t2) && TryPushBig(t2, p2 + v, v, out var t3)) {
           result = t3;
-          t3[p + v] = c;
-          t3[p2 + v] = c == BigBoxLeft ? BigBoxRight : BigBoxLeft;
-          t3[p] = Empty;
-          t3[p2] = Empty;
+          result[p + v] = c;
+          result[p2 + v] = c == BigBoxLeft ? BigBoxRight : BigBoxLeft;
+          result[p] = Empty;
+          result[p2] = Empty;
           return true;
         }
         return false;

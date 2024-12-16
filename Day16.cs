@@ -1,0 +1,61 @@
+using System.ComponentModel;
+using AdventOfCode2024.CSharp.Utils;
+using FluentAssertions;
+using Parser;
+using Utils;
+namespace AdventOfCode2024.CSharp.Day16;
+
+public class Day16
+{
+  private const char Wall = '#';
+  private const char Start = 'S';
+  private const char End = 'E';
+
+  [Theory]
+  [InlineData("Day16.Sample", 7036)]
+  [InlineData("Day16.Sample.2", 11048)]
+  [InlineData("Day16", 105508)]
+  public void Part1(string file, long expected)
+  {
+    var world = FormatInput(AoCLoader.LoadLines(file));
+    BestPaths(world).First().Score.Should().Be(expected);
+  }
+
+  public IEnumerable<(List<Point> Path, long Score)> BestPaths(Dictionary<Point, char> world) {
+    var start = world.Where(kv => kv.Value == Start).Single().Key;
+    var goal = world.Where(kv => kv.Value == End).Single().Key;
+
+    var open = new PriorityQueue<(Point Point, Vector Vector, long Score, List<Point> Path)>(it => it.Score);
+    open.Enqueue((start, Vector.East, 0, [start]));
+    // HashSet<Point> closed = [start, .. world.Where(kv => kv.Value == Wall).Select(it => it.Key)];
+    Dictionary<(Point, Vector), long> closed = [];
+    closed[(start, Vector.East)] = 0;
+
+    long? lowestScore = null;
+
+    while (open.TryDequeue(out var current)) {
+      if (current.Score > lowestScore) yield break;
+      if (world[current.Point] == End) {
+        yield return (current.Path, current.Score);
+      }
+      if (closed[(current.Point, current.Vector)] < current.Score) continue;
+      foreach(var next in new[]{
+        (current.Point + current.Vector, current.Vector, current.Score + 1),
+        (current.Point, current.Vector.RotateLeft(), current.Score + 1000),
+        (current.Point, current.Vector.RotateRight(), current.Score + 1000),
+      }) {
+        if (world[next.Item1] == Wall) continue;
+        if (closed.TryGetValue((next.Item1, next.Item2), out var existing) && existing <= next.Item3) continue;
+        closed[(next.Item1, next.Item2)] = next.Item3;
+        var nextPath = current.Path.ToList();
+        if (next.Item2 == current.Vector) nextPath.Add(next.Item1);
+        open.Enqueue((next.Item1, next.Item2, next.Item3, nextPath));
+      }
+    }
+  }
+
+  private static Dictionary<Point, char> FormatInput(List<string> input)
+  {
+    return input.Gridify();
+  }
+}
