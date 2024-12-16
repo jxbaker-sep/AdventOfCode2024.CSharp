@@ -93,9 +93,6 @@ public class Day16
     open.Clear();
     Dictionary<(Point Point, Vector Vector), long> CostToStart = [];
     CostToStart.Add((start, Vector.East), 0);
-    CostToStart.Add((start, Vector.North), 0);
-    CostToStart.Add((start, Vector.South), 0);
-    CostToStart.Add((start, Vector.West), 0);
 
     open = new Queue<(Point Point, Vector Vector)>();
     open.Enqueue((start, Vector.East));
