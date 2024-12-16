@@ -21,7 +21,17 @@ public class Day16
     BestPaths(world).First().Score.Should().Be(expected);
   }
 
-  public IEnumerable<(List<Point> Path, long Score)> BestPaths(Dictionary<Point, char> world) {
+  [Theory]
+  [InlineData("Day16.Sample", 45)]
+  [InlineData("Day16.Sample.2", 64)]
+  [InlineData("Day16", 0)]
+  public void Part2(string file, int expected)
+  {
+    var world = FormatInput(AoCLoader.LoadLines(file));
+    BestPaths(world).SelectMany(it => it.Path).ToHashSet().Count.Should().Be(expected);
+  }
+
+  public static IEnumerable<(List<Point> Path, long Score)> BestPaths(Dictionary<Point, char> world) {
     var start = world.Where(kv => kv.Value == Start).Single().Key;
     var goal = world.Where(kv => kv.Value == End).Single().Key;
 
@@ -34,8 +44,9 @@ public class Day16
     long? lowestScore = null;
 
     while (open.TryDequeue(out var current)) {
-      if (current.Score > lowestScore) yield break;
+      if (lowestScore != null && current.Score > lowestScore) yield break;
       if (world[current.Point] == End) {
+        lowestScore = current.Score;
         yield return (current.Path, current.Score);
       }
       if (closed[(current.Point, current.Vector)] < current.Score) continue;
