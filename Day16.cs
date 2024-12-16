@@ -36,8 +36,8 @@ public class Day16
     var start = world.Where(kv => kv.Value == Start).Single().Key;
     var goal = world.Where(kv => kv.Value == End).Single().Key;
 
-    var open = new PriorityQueue<(Point Point, Vector Vector, long Score, List<Point> Path)>(it => it.Score);
-    open.Enqueue((start, Vector.East, 0, [start]));
+    var open = new PriorityQueue<(Point Point, Vector Vector, long Score)>(it => it.Score);
+    open.Enqueue((start, Vector.East, 0));
     Dictionary<(Point, Vector), long> closed = [];
     closed[(start, Vector.East)] = 0;
 
@@ -54,9 +54,7 @@ public class Day16
         if (world[next.Item1] == Wall) continue;
         if (closed.TryGetValue((next.Item1, next.Item2), out var existing) && existing <= next.Item3) continue;
         closed[(next.Item1, next.Item2)] = next.Item3;
-        var nextPath = current.Path.ToList();
-        nextPath.Add(next.Item1);
-        open.Enqueue((next.Item1, next.Item2, next.Item3, nextPath));
+        open.Enqueue((next.Item1, next.Item2, next.Item3));
       }
     }
     throw new ApplicationException();
