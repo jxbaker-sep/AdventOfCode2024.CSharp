@@ -73,9 +73,7 @@ public class Day16
       }
     }
 
-    var lowestScore = world.Where(it => it.Value != Wall).Select(it => it.Key).SelectMany(point => Vector.Cardinals.Select(vector => 
-      CostToGoal.TryGetValue((point, vector), out var g) && CostToStart.TryGetValue((point, vector), out var s) ?
-        g + s : long.MaxValue)).Min();
+    var lowestScore = CostToStart.Where(kv => kv.Key.Point == goal).Select(it => it.Value).Min();
 
     var n = world.Where(it => it.Value != Wall).Select(it => it.Key).Where(point => Vector.Cardinals.Any(vector => 
       CostToGoal.TryGetValue((point, vector), out var g) && CostToStart.TryGetValue((point, vector), out var s)
