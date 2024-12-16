@@ -19,7 +19,7 @@ public class Day16
   public void Part1(string file, long expected)
   {
     var world = FormatInput(AoCLoader.LoadLines(file));
-    BestPaths(world).First().Score.Should().Be(expected);
+    ShortestPath(world).Should().Be(expected);
   }
 
   [Theory]
@@ -32,7 +32,7 @@ public class Day16
     PointsOnScoringPaths(world, lowestScore).ToHashSet().Count.Should().Be(expected);
   }
 
-  public static IEnumerable<(List<Point> Path, long Score)> BestPaths(Dictionary<Point, char> world) {
+  public static long ShortestPath(Dictionary<Point, char> world) {
     var start = world.Where(kv => kv.Value == Start).Single().Key;
     var goal = world.Where(kv => kv.Value == End).Single().Key;
 
@@ -41,13 +41,9 @@ public class Day16
     Dictionary<(Point, Vector), long> closed = [];
     closed[(start, Vector.East)] = 0;
 
-    long? lowestScore = null;
-
     while (open.TryDequeue(out var current)) {
-      if (lowestScore != null && current.Score > lowestScore) yield break;
       if (world[current.Point] == End) {
-        lowestScore = current.Score;
-        yield return (current.Path, current.Score);
+        return current.Score;
       }
       if (closed[(current.Point, current.Vector)] < current.Score) continue;
       foreach(var next in new[]{
@@ -63,6 +59,7 @@ public class Day16
         open.Enqueue((next.Item1, next.Item2, next.Item3, nextPath));
       }
     }
+    throw new ApplicationException();
   }
 
   public static IEnumerable<Point> PointsOnScoringPaths(Dictionary<Point, char> world, long lowestScore) {
@@ -121,12 +118,9 @@ public class Day16
       }
     }
 
-    foreach(var point in world.Where(it => it.Value != Wall).Select(it => it.Key)) {
-      foreach(var vector in Vector.Cardinals) {
-        if (CostToGoal.TryGetValue((point, vector), out var g) && CostToStart.TryGetValue((point, vector), out var s)
-          && g + s <= lowestScore) yield return point;
-      }
-    }
+    return world.Where(it => it.Value != Wall).Select(it => it.Key).Where(point => Vector.Cardinals.Any(vector => 
+      CostToGoal.TryGetValue((point, vector), out var g) && CostToStart.TryGetValue((point, vector), out var s)
+          && g + s <= lowestScore));
   }
 
   private static Dictionary<Point, char> FormatInput(List<string> input)
