@@ -13,54 +13,16 @@ public class Day16
   private const char End = 'E';
 
   [Theory]
-  [InlineData("Day16.Sample", 7036)]
-  [InlineData("Day16.Sample.2", 11048)]
-  [InlineData("Day16", 105508)]
-  public void Part1(string file, long expected)
+  [InlineData("Day16.Sample", 7036L, 45)]
+  [InlineData("Day16.Sample.2", 11048L, 64)]
+  [InlineData("Day16", 105508L, 548)]
+  public void Part1(string file, long expected, int expected2)
   {
     var world = FormatInput(AoCLoader.LoadLines(file));
-    ShortestPath(world).Should().Be(expected);
+    FindShortestPaths(world).Should().Be((expected, expected2));
   }
 
-  [Theory]
-  [InlineData("Day16.Sample", 7036, 45)]
-  [InlineData("Day16.Sample.2", 11048, 64)]
-  [InlineData("Day16", 105508, 548)]
-  public void Part2(string file, long lowestScore, int expected)
-  {
-    var world = FormatInput(AoCLoader.LoadLines(file));
-    PointsOnScoringPaths(world, lowestScore).ToHashSet().Count.Should().Be(expected);
-  }
-
-  public static long ShortestPath(Dictionary<Point, char> world) {
-    var start = world.Where(kv => kv.Value == Start).Single().Key;
-    var goal = world.Where(kv => kv.Value == End).Single().Key;
-
-    var open = new PriorityQueue<(Point Point, Vector Vector, long Score)>(it => it.Score);
-    open.Enqueue((start, Vector.East, 0));
-    Dictionary<(Point, Vector), long> closed = [];
-    closed[(start, Vector.East)] = 0;
-
-    while (open.TryDequeue(out var current)) {
-      if (world[current.Point] == End) {
-        return current.Score;
-      }
-      if (closed[(current.Point, current.Vector)] < current.Score) continue;
-      foreach(var next in new[]{
-        (current.Point + current.Vector, current.Vector, current.Score + 1),
-        (current.Point + current.Vector.RotateLeft(), current.Vector.RotateLeft(), current.Score + 1001),
-        (current.Point + current.Vector.RotateRight(), current.Vector.RotateRight(), current.Score + 1001),
-      }) {
-        if (world[next.Item1] == Wall) continue;
-        if (closed.TryGetValue((next.Item1, next.Item2), out var existing) && existing <= next.Item3) continue;
-        closed[(next.Item1, next.Item2)] = next.Item3;
-        open.Enqueue((next.Item1, next.Item2, next.Item3));
-      }
-    }
-    throw new ApplicationException();
-  }
-
-  public static IEnumerable<Point> PointsOnScoringPaths(Dictionary<Point, char> world, long lowestScore) {
+  public static (long Score, int Count) FindShortestPaths(Dictionary<Point, char> world) {
     var start = world.Where(kv => kv.Value == Start).Single().Key;
     var goal = world.Where(kv => kv.Value == End).Single().Key;
     HashSet<Point> result = [start, goal];
@@ -85,7 +47,6 @@ public class Day16
         if (world[next.Point] == Wall) continue;
         if (CostToGoal.TryGetValue((next.Point, next.Vector), out var existing) && existing <= next.Score) continue;
         CostToGoal[(next.Point, next.Vector)] = next.Score;
-        if (lowestScore < next.Score) continue;
         if (world[next.Point] == Start) continue;
         open.Enqueue((next.Point, next.Vector));
       }
@@ -107,15 +68,20 @@ public class Day16
         if (world[next.Point] == Wall) continue;
         if (CostToStart.TryGetValue((next.Point, next.Vector), out var existing) && existing <= next.Score) continue;
         CostToStart[(next.Point, next.Vector)] = next.Score;
-        if (lowestScore < next.Score) continue;
         if (world[next.Point] == End) continue;
         open.Enqueue((next.Point, next.Vector));
       }
     }
 
-    return world.Where(it => it.Value != Wall).Select(it => it.Key).Where(point => Vector.Cardinals.Any(vector => 
+    var lowestScore = world.Where(it => it.Value != Wall).Select(it => it.Key).SelectMany(point => Vector.Cardinals.Select(vector => 
+      CostToGoal.TryGetValue((point, vector), out var g) && CostToStart.TryGetValue((point, vector), out var s) ?
+        g + s : long.MaxValue)).Min();
+
+    var n = world.Where(it => it.Value != Wall).Select(it => it.Key).Where(point => Vector.Cardinals.Any(vector => 
       CostToGoal.TryGetValue((point, vector), out var g) && CostToStart.TryGetValue((point, vector), out var s)
-          && g + s <= lowestScore));
+          && g + s <= lowestScore)).Count();
+
+    return (lowestScore, n);
   }
 
   private static Dictionary<Point, char> FormatInput(List<string> input)
