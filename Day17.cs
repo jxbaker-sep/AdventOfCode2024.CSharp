@@ -36,12 +36,12 @@ public class Day17
     result.Should().Be(expected);
   }
 
-  long? Determine(Program p, List<long> items, int n, long basen) {
+  long? Determine(Program program, List<long> items, int n, long startingValue) {
     for (var i = 0; i < 8; i ++) {
-      var it = basen + i;
-      if (Enumerable.SequenceEqual(Run(p with {A = it}).ToList(), items[(items.Count -n)..])) {
-        if (n == items.Count) return it;
-        if (Determine(p, items, n + 1, it << 3) is {} x) return x;
+      var attempt = startingValue + i;
+      if (Enumerable.SequenceEqual(Run(program with {A = attempt}).ToList(), items[(items.Count -n)..])) {
+        if (n == items.Count) return attempt;
+        if (Determine(program, items, n + 1, attempt << 3) is {} x) return x;
       }
     }
     return null;
