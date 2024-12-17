@@ -25,18 +25,57 @@ public class Day17
     Run(input).Join(",").Should().Be(expected);
   }
 
+  [Fact]
+  public void Part2_2()
+  {
+    var program = FormatInput(AoCLoader.LoadFile("Day17"));
+    List<long> x = program.Codes.ToList();
+    var result = DetermineFinal(x, LongPow2((x.Count - 1) * 3)).ToList();
+
+    program = program with { A = result[0]};
+    Run(program).ToList().Should().BeEquivalentTo(program.Codes);
+    result[0].Should().Be(258394985014171);
+  }
+
+  IEnumerable<long> DetermineFinal(List<long> items, long basen) {
+    if (items.Count == 0) {
+      yield return basen;
+      yield break;
+    }
+    for (var i = 0; i < 8; i ++) {
+      var a0 = basen + (i * LongPow2((items.Count - 1) * 3));
+      var a = a0 / LongPow2 ((items.Count - 1) * 3); 
+      var b = (a % 8) ^ 7 ; 
+      var c = a / LongPow2(b); 
+      var output = (b ^ c ^ 7) % 8;
+      if (output == items[^1]) {
+        foreach(var sub in DetermineFinal(items[..^1], a0)) yield return sub;
+      }
+    }
+  }
+
   public IEnumerable<long> Run(Program program)
   {
     while (program.IP < program.Codes.Count)
     {
       var (np, output) = Next(program);
-      if (output is int i) yield return i;
+      if (output is long i) yield return i;
       program = np;
     }
   }
 
-  public (Program, int? output) Next(Program program) {
-    int? output = null;
+  public (Program Program, long output)? ToNextOutput(Program program) {
+    while (program.IP < program.Codes.Count)
+    {
+      var (np, output) = Next(program);
+      if (output is long i) return (np, i);
+      program = np;
+    }
+    return null;
+  }
+
+  public (Program, long? output) Next(Program program) {
+    long? output = null;
     var opcode = program.Codes[program.IP];
       var operand = program.Codes[program.IP + 1];
       var next = program.IP + 2;
@@ -51,7 +90,7 @@ public class Day17
       switch (opcode)
       {
         case adv:
-          program = program with { A = program.A >> combo() };
+          program = program with { A = program.A / LongPow2(combo()) };
           break;
         case bxl:
           program = program with { B = program.B ^ operand };
@@ -60,7 +99,7 @@ public class Day17
           program = program with { B = combo() % 8 };
           break;
         case jnz:
-          if(program.A != 0) next = operand;
+          if(program.A != 0) next = (int)operand;
           break;
         case bxc:
           program = program with { B = program.B ^ program.C };
@@ -69,14 +108,20 @@ public class Day17
           output = combo() % 8;
           break;
         case bdv:
-          program = program with { B = program.A >> combo() };
+          program = program with { B = program.A / LongPow2(combo()) };
           break;
         case cdv:
-          program = program with { C = program.A >> combo() };
+          program = program with { C = program.A / LongPow2(combo()) };
           break;
       }
       program = program with { IP = next };
       return (program, output);
+  }
+
+  long LongPow2(long y) {
+    var result = 1L;
+    for(long x = 0; x < y; x++) result *= 2;
+    return result;
   }
 
   [Fact]
@@ -96,12 +141,12 @@ public class Day17
 
   }
 
-  public record Program(int A, int B, int C, int IP, IReadOnlyList<int> Codes);
+  public record Program(long A, long B, long C, int IP, IReadOnlyList<long> Codes);
 
   private static Program FormatInput(string input)
   {
     return P.Format("Register A: {} Register B: {} Register C: {} Program: {}", P.Long, P.Long, P.Long, P.Long.Star(","))
-      .Select(it => new Program((int)it.First, (int)it.Second, (int)it.Third, 0, it.Fourth.Select(it => (int)it).ToList()))
+      .Select(it => new Program(it.First, it.Second, it.Third, 0, it.Fourth))
       .Parse(input);
   }
 }
