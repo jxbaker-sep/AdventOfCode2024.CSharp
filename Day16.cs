@@ -15,6 +15,9 @@ public class Day16
   [Theory]
   [InlineData("Day16.Sample", 7036L, 45)]
   [InlineData("Day16.Sample.2", 11048L, 64)]
+  [InlineData("Day16.Alternate.1", 21148, 149)]
+  [InlineData("Day16.Alternate.2", 5078, 413)]
+  [InlineData("Day16.Alternate.3", 41210, 514)]
   [InlineData("Day16", 105508L, 548)]
   public void Part1(string file, long expected, int expected2)
   {
