@@ -38,13 +38,13 @@ public class Day17
     result[0].Should().Be(258394985014171);
   }
 
-  IEnumerable<long> DetermineFinal(List<long> items, long basen) {
+  IEnumerable<long> DetermineFinal(List<long> items, long baseValue) {
     if (items.Count == 0) {
-      yield return basen;
+      yield return baseValue;
       yield break;
     }
     for (var i = 0; i < 8; i ++) {
-      var a0 = basen + (i * LongPow2((items.Count - 1) * 3));
+      var a0 = baseValue + (i * LongPow2((items.Count - 1) * 3));
       var a = a0 / LongPow2 ((items.Count - 1) * 3); 
       var b = (a % 8) ^ 7 ; 
       var c = a / LongPow2(b); 
@@ -66,9 +66,9 @@ public class Day17
     result.Should().Be(expected);
   }
 
-  long? Determine(Program program, List<long> items, int n, long startingValue) {
+  long? Determine(Program program, List<long> items, int n, long baseValue) {
     for (var i = 0; i < 8; i ++) {
-      var attempt = startingValue + i;
+      var attempt = baseValue + i;
       if (Enumerable.SequenceEqual(Run(program with {A = attempt}).ToList(), items[(items.Count -n)..])) {
         if (n == items.Count) return attempt;
         if (Determine(program, items, n + 1, attempt << 3) is {} x) return x;
