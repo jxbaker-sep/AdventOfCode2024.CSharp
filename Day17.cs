@@ -25,6 +25,36 @@ public class Day17
     Run(input).Join(",").Should().Be(expected);
   }
 
+
+  [Fact]
+  public void Part2_2()
+  {
+    var program = FormatInput(AoCLoader.LoadFile("Day17"));
+    List<long> x = program.Codes.ToList();
+    var result = DetermineFinal(x, LongPow2((x.Count - 1) * 3)).ToList();
+
+    program = program with { A = result[0]};
+    Run(program).ToList().Should().BeEquivalentTo(program.Codes);
+    result[0].Should().Be(258394985014171);
+  }
+
+  IEnumerable<long> DetermineFinal(List<long> items, long basen) {
+    if (items.Count == 0) {
+      yield return basen;
+      yield break;
+    }
+    for (var i = 0; i < 8; i ++) {
+      var a0 = basen + (i * LongPow2((items.Count - 1) * 3));
+      var a = a0 / LongPow2 ((items.Count - 1) * 3); 
+      var b = (a % 8) ^ 7 ; 
+      var c = a / LongPow2(b); 
+      var output = (b ^ c ^ 7) % 8;
+      if (output == items[^1]) {
+        foreach(var sub in DetermineFinal(items[..^1], a0)) yield return sub;
+      }
+    }
+  }
+
   [Theory]
   [InlineData("Day17.Sample.2", 117440)]
   [InlineData("Day17", 258394985014171)]
