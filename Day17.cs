@@ -25,33 +25,26 @@ public class Day17
     Run(input).Join(",").Should().Be(expected);
   }
 
-  [Fact]
-  public void Part2_2()
+  [Theory]
+  [InlineData("Day17.Sample.2", 117440)]
+  [InlineData("Day17", 258394985014171)]
+  public void Part2_3(string file, long expected)
   {
-    var program = FormatInput(AoCLoader.LoadFile("Day17"));
+    var program = FormatInput(AoCLoader.LoadFile(file));
     List<long> x = program.Codes.ToList();
-    var result = DetermineFinal(x, LongPow2((x.Count - 1) * 3)).ToList();
-
-    program = program with { A = result[0]};
-    Run(program).ToList().Should().BeEquivalentTo(program.Codes);
-    result[0].Should().Be(258394985014171);
+    var result = Determine(program, x, 1, 0) ?? throw new ApplicationException();
+    result.Should().Be(expected);
   }
 
-  IEnumerable<long> DetermineFinal(List<long> items, long basen) {
-    if (items.Count == 0) {
-      yield return basen;
-      yield break;
-    }
+  long? Determine(Program p, List<long> items, int n, long basen) {
     for (var i = 0; i < 8; i ++) {
-      var a0 = basen + (i * LongPow2((items.Count - 1) * 3));
-      var a = a0 / LongPow2 ((items.Count - 1) * 3); 
-      var b = (a % 8) ^ 7 ; 
-      var c = a / LongPow2(b); 
-      var output = (b ^ c ^ 7) % 8;
-      if (output == items[^1]) {
-        foreach(var sub in DetermineFinal(items[..^1], a0)) yield return sub;
+      var it = basen + i;
+      if (Enumerable.SequenceEqual(Run(p with {A = it}).ToList(), items[(items.Count -n)..])) {
+        if (n == items.Count) return it;
+        if (Determine(p, items, n + 1, it << 3) is {} x) return x;
       }
     }
+    return null;
   }
 
   public IEnumerable<long> Run(Program program)
@@ -62,16 +55,6 @@ public class Day17
       if (output is long i) yield return i;
       program = np;
     }
-  }
-
-  public (Program Program, long output)? ToNextOutput(Program program) {
-    while (program.IP < program.Codes.Count)
-    {
-      var (np, output) = Next(program);
-      if (output is long i) return (np, i);
-      program = np;
-    }
-    return null;
   }
 
   public (Program, long? output) Next(Program program) {
@@ -138,7 +121,6 @@ public class Day17
 
     Next(new Program(0, 29, 0, 0, [1, 7])).Item1.B.Should().Be(26);
     Next(new Program(0, 2024, 43690, 0, [4, 0])).Item1.B.Should().Be(44354);
-
   }
 
   public record Program(long A, long B, long C, int IP, IReadOnlyList<long> Codes);
