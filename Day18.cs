@@ -25,11 +25,11 @@ public class Day18
   {
     var input = FormatInput(AoCLoader.LoadLines(file));
     var index = MiscUtils.BinarySearch(input.Count, (take) => {
-      var grid = input.Take((int)take).ToHashSet();
+      var grid = input.Take(take).ToHashSet();
       return Walk(grid, size) == null;
-    })!;
+    }) ?? throw new ApplicationException();
 
-    var x = input[(int)index - 1];
+    var x = input[index - 1];
     $"{x.X},{x.Y}".Should().Be(expected);
   }
 
