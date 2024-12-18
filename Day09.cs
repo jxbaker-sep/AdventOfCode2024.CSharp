@@ -96,6 +96,9 @@ public class Day09
     return result;
   }
 
+  public record Record(int Index, int Length, long Id);
+
+
   private static List<Record> FormatInput2(List<string> input)
   {
     var line = input.Single().Select(it => Convert.ToInt32($"{it}"));

@@ -89,6 +89,8 @@ public class Day08
     return point.Y >= 0 && point.Y < input.Height && point.X >= 0 && point.X < input.Width;
   }
 
+  public record Day08Input(HashSet<(Point Point, char Frequency)> World, int Height, int Width);
+
 
   private static Day08Input FormatInput(List<string> input)
   {

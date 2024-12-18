@@ -64,6 +64,9 @@ public class Day06
     return (visited, false);
   }
 
+  public record Day06Input(HashSet<Point> World, Point Start, int Height, int Width, Vector StartingVector);
+
+
   private static Day06Input FormatInput(List<string> input)
   {
     var result = input.SelectMany((line, row) => line.Select((c, col) => (new Point(row, col), c)));

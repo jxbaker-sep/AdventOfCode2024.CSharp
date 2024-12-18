@@ -1,5 +1,4 @@
 
-using AdventOfCode2024.CSharp.Utils.TestInputs;
 using FluentAssertions;
 using Parser;
 using Utils;
@@ -202,6 +201,9 @@ public class Day05
     }
     return true;
   }
+
+  public record Day05Input(Dictionary<long, List<long>> Ordering, List<List<long>> Pages);
+
 
   private static Day05Input Convert(List<string> input)
   {
