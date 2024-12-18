@@ -67,5 +67,16 @@ namespace AdventOfCode2024.CSharp.Tests
       new[]{1L,1L}.OrderedIntersect(new[]{1L, 1L}).Should().BeEquivalentTo([1L, 1L]);
       new[]{1L,2L,3L,5L}.OrderedIntersect(new[]{3L,4L,5L}).Should().BeEquivalentTo([3L, 5L]);
     }
+
+    [Fact]
+    public void BinarySearchTest()
+    {
+      MiscUtils.BinarySearch(3, index => new[]{0, 0, 0, 0}[index] > 0).Should().Be(null);
+      MiscUtils.BinarySearch(3, index => new[]{0, 0, 0, 1}[index] > 0).Should().Be(3);
+      MiscUtils.BinarySearch(3, index => new[]{0, 0, 1, 1}[index] > 0).Should().Be(2);
+      MiscUtils.BinarySearch(3, index => new[]{0, 1, 1, 1}[index] > 0).Should().Be(1);
+      MiscUtils.BinarySearch(3, index => new[]{1, 1, 1, 1}[index] > 0).Should().Be(0);
+      MiscUtils.BinarySearch(3, index => new[]{1, 1, 1, 1}[index] < 1).Should().Be(null);
+    }
   }
 }

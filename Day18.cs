@@ -19,19 +19,18 @@ public class Day18
   }
 
   [Theory]
-  [InlineData("Day18.Sample", 13, 6, "6,1")]
-  [InlineData("Day18", 1025, 70, "18,62")]
-  public void Part2(string file, int firstTake, long size, string expected)
+  [InlineData("Day18.Sample", 6, "6,1")]
+  [InlineData("Day18", 70, "18,62")]
+  public void Part2(string file, long size, string expected)
   {
     var input = FormatInput(AoCLoader.LoadLines(file));
-    for(var take = firstTake; take < input.Count; take++) {
-      var grid = input.Take(take).ToHashSet();
-      if (Walk(grid, size) == null) {
-        var x = input.Take(take).Last();
-        $"{x.X},{x.Y}".Should().Be(expected);
-        return;
-      }
-    }
+    var index = MiscUtils.BinarySearch(input.Count, (take) => {
+      var grid = input.Take((int)take).ToHashSet();
+      return Walk(grid, size) == null;
+    })!;
+
+    var x = input[(int)index - 1];
+    $"{x.X},{x.Y}".Should().Be(expected);
   }
 
   public static long? Walk(HashSet<Point> grid, long size) {
