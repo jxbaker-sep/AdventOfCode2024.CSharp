@@ -33,10 +33,10 @@ public class Day01
 
     private static (List<long>, List<long>) Convert(List<string> data)
     {
-        var temp = data.Select(it => (P.Long.Trim() + P.Long).Parse(it)).ToList();
+        var temp = P.Format("{} {}", P.Long, P.Long).ParseMany(data);
         return (
-            temp.Select(it => it[0]).Order().ToList(),
-            temp.Select(it => it[1]).Order().ToList()
+            temp.Select(it => it.First).Order().ToList(),
+            temp.Select(it => it.Second).Order().ToList()
         );
     }
 }

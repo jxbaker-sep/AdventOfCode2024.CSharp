@@ -13,7 +13,7 @@ public class Day11
   [InlineData("Day11", 75, 239_321_955_280_205L)]
   public void Part1(string file, int blinks, long expected)
   {
-    var input = FormatInput(AoCLoader.LoadLines(file));
+    var input = FormatInput(AoCLoader.LoadFile(file));
     input.Select(it => NumberOfStonesAfterBlinking(it, blinks)).Sum().Should().Be(expected);
   }
 
@@ -43,8 +43,8 @@ public class Day11
     return result;
   }
 
-  private static List<long> FormatInput(List<string> input)
+  private static List<long> FormatInput(string input)
   {
-    return input.Select(P.Long.Trim().Star().Parse).Single();
+    return P.Long.Trim().Star().Parse(input);
   }
 }

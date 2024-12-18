@@ -13,7 +13,7 @@ public class Day13
   [InlineData("Day13", 35574L)]
   public void Part1(string file, long expected)
   {
-    var input = FormatInput(AoCLoader.LoadLines(file));
+    var input = FormatInput(AoCLoader.LoadFile(file));
     input.Select(it => Prize(it)).Sum().Should().Be(expected);
   }
 
@@ -22,7 +22,7 @@ public class Day13
   [InlineData("Day13", 35574L)]
   public void Part1_z3(string file, long expected)
   {
-    var input = FormatInput(AoCLoader.LoadLines(file));
+    var input = FormatInput(AoCLoader.LoadFile(file));
     input.Select(it => Prize_z3(it)).Sum().Should().Be(expected);
   }
 
@@ -31,9 +31,9 @@ public class Day13
   [InlineData("Day13", 80882098756071)]
   public void Part2(string file, long expected)
   {
-    var input = FormatInput(AoCLoader.LoadLines(file));
+    var input = FormatInput(AoCLoader.LoadFile(file));
     var scale = 10000000000000;
-    input.Select(it => Prize((it.A, it.B, new Point(it.Prize.Y + scale, it.Prize.X + scale)))).Sum().Should().Be(expected);
+    input.Select(it => Prize(it with { Prize = new Point(it.Prize.Y + scale, it.Prize.X + scale) })).Sum().Should().Be(expected);
   }
 
   [Theory]
@@ -41,9 +41,9 @@ public class Day13
   [InlineData("Day13", 80882098756071)]
   public void Part2_z3(string file, long expected)
   {
-    var input = FormatInput(AoCLoader.LoadLines(file));
-    var scale = 10000000000000;
-    input.Select(it => Prize_z3((it.A, it.B, new Point(it.Prize.Y + scale, it.Prize.X + scale)))).Sum().Should().Be(expected);
+    var input = FormatInput(AoCLoader.LoadFile(file));
+    var scale = new Vector(10000000000000, 10000000000000);
+    input.Select(it => Prize_z3(it with { Prize = it.Prize + scale })).Sum().Should().Be(expected);
   }
 
   static long Prize_z3(Machine machine)
@@ -92,13 +92,13 @@ public class Day13
 
   public record Machine(Vector A, Vector B, Point Prize);
 
-  private static List<Machine> FormatInput(List<string> input)
+  private static List<Machine> FormatInput(string input)
   {
     var button = P.Format("Button {}: X+{}, Y+{}", P.Any, P.Long, P.Long)
       .Select(it => new Vector(it.Third, it.Second));
     var prize = P.Format("Prize: X={}, Y={}", P.Long, P.Long)
       .Select(it => new Point(it.Second, it.First));
     var machine = P.Sequence(button, button, prize).Select(it => new Machine(it.First, it.Second, it.Third));
-    return machine.Star().End().Parse(input.Join("\n"));
+    return machine.Star().End().Parse(input);
   }
 }

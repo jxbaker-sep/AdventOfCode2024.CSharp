@@ -56,7 +56,7 @@ public class Day14
     throw new ApplicationException();
   }
 
-  private void Print(List<Robot> robots)
+  private static void Print(List<Robot> robots)
   {
     var points = robots.Select(r => r.Point).ToHashSet();
     long minx = points.Select(it => it.X).Min();
@@ -74,7 +74,7 @@ public class Day14
     }
   }
 
-  private Robot Move(Robot robot, int width, int height)
+  private static Robot Move(Robot robot, int width, int height)
   {
     var p2 = robot.Point + robot.Vector;
     if (p2.X < 0) p2 = p2 with { X = width + p2.X };

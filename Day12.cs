@@ -38,7 +38,7 @@ public class Day12
     sum.Should().Be(expected);
   }
 
-  public (long area, long perimeter, long perimeter2, char plant) Section(Dictionary<Point, char> garden)
+  public static (long area, long perimeter, long perimeter2, char plant) Section(Dictionary<Point, char> garden)
   {
     Queue<Point> open = new([garden.First().Key]);
     long perimeter = 0;

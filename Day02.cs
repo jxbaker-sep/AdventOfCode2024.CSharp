@@ -83,6 +83,6 @@ public class Day02
 
   private static List<List<long>> Convert(List<string> data)
   {
-    return data.Select(it => P.Long.Trim().Plus().Parse(it)).ToList();
+    return P.Long.Trim().Plus().ParseMany(data);
   }
 }
