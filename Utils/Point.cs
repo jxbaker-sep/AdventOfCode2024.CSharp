@@ -4,6 +4,7 @@ namespace AdventOfCode2024.CSharp.Utils;
 
 
 public record Point(long Y, long X) {
+  internal static readonly Point Zero = new(0, 0);
 
   public static Point operator+(Point point, Vector vector) => new(point.Y + vector.Y, point.X + vector.X);
   public static Point operator-(Point point, Vector vector) => new(point.Y - vector.Y, point.X - vector.X);

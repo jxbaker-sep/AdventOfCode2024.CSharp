@@ -32,27 +32,27 @@ public class Day18
     var x = input[index - 1];
     $"{x.X},{x.Y}".Should().Be(expected);
   }
-
+  
   public static long? Walk(HashSet<Point> grid, long size) {
     var goal = new Point(size, size);
-    var queue = new PriorityQueue<(Point Point, long Steps)>(it => it.Steps + it.Point.ManhattanDistance(goal));
-    queue.Enqueue((new(0,0), 0));
+    var start = Point.Zero;
+    var queue = new Queue<Point>([start]);
 
     var closed = new Dictionary<Point, long>
     {
-      { new(0, 0), 0 }
+      { start, 0 }
     };
 
     while (queue.TryDequeue(out var current)) {
-      if (closed.TryGetValue(current.Point, out long value) && value < current.Steps) continue;
+      var cl = closed[current];
       foreach(var v in Vector.Cardinals) {
-        var next = current.Point + v;
+        var next = current + v;
         if (next.X < 0 || next.X > size || next.Y < 0 || next.Y > size) continue;
         if (grid.Contains(next)) continue;
-        if (next == goal) return current.Steps + 1;
-        if (closed.TryGetValue(next, out long value2) && value2 <= current.Steps + 1) continue;
-        closed[next] = current.Steps + 1;
-        queue.Enqueue((next, current.Steps + 1));
+        if (next == goal) return cl + 1;
+        if (closed.TryGetValue(next, out long value2) && value2 <= cl + 1) continue;
+        closed[next] = cl + 1;
+        queue.Enqueue(next);
       }
     }
     return null;
