@@ -1,16 +1,10 @@
-
-using System.Net.Security;
-using System.Runtime.CompilerServices;
 using AdventOfCode2024.CSharp.Utils;
 using FluentAssertions;
 using Parser;
 using Utils;
 using P = Parser.ParserBuiltins;
 using Microsoft.Z3;
-using System.Diagnostics.Contracts;
 namespace AdventOfCode2024.CSharp.Day13;
-
-using Machine = (Vector A, Vector B, Point Prize);
 
 public class Day13
 {
@@ -96,13 +90,15 @@ public class Day13
     return apress * 3 + bpress;
   }
 
+  public record Machine(Vector A, Vector B, Point Prize);
+
   private static List<Machine> FormatInput(List<string> input)
   {
     var button = P.Format("Button {}: X+{}, Y+{}", P.Any, P.Long, P.Long)
       .Select(it => new Vector(it.Third, it.Second));
     var prize = P.Format("Prize: X={}, Y={}", P.Long, P.Long)
       .Select(it => new Point(it.Second, it.First));
-    var machine = P.Sequence(button, button, prize);
+    var machine = P.Sequence(button, button, prize).Select(it => new Machine(it.First, it.Second, it.Third));
     return machine.Star().End().Parse(input.Join("\n"));
   }
 }
