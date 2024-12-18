@@ -15,7 +15,7 @@ public class Day18
   {
     var input = FormatInput(AoCLoader.LoadLines(file));
     var grid = input.Take(take).ToHashSet();
-    Walk(grid, size)!.Should().Be(expected);
+    Walk(grid, size).Should().Be(expected);
   }
 
   [Theory]
