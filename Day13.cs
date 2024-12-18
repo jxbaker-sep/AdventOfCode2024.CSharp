@@ -85,14 +85,13 @@ public class Day13
     var denominator = ax * by - ay * bx;
     var numerator = ax * py - ay * px;
 
-    if (denominator == 0) return 0;
-    if (numerator % denominator != 0) return 0;
+    var bpress = Math.DivRem(numerator, denominator, out var bremainder);
 
-    var bpress = numerator / denominator;
+    if (bremainder != 0) return 0;
 
-    var apress = (px - bx * bpress) / ax;
+    var apress = Math.DivRem(px - bx * bpress, ax, out var aremainder);
 
-    if ((px - bx * bpress) % ax != 0) return 0;
+    if (aremainder != 0) return 0;
 
     return apress * 3 + bpress;
   }
