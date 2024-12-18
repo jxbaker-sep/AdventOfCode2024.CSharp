@@ -54,7 +54,7 @@ public class Day13
 
   static long Prize_z3(Machine machine)
   {
-    using Context ctx = new(new Dictionary<string, string>() { { "proof", "true" } });
+    using Context ctx = new([]);
     var ax = ctx.MkInt(machine.A.X);
     var ay = ctx.MkInt(machine.A.Y);
     var bx = ctx.MkInt(machine.B.X);
@@ -62,8 +62,8 @@ public class Day13
     var px = ctx.MkInt(machine.Prize.X);
     var py = ctx.MkInt(machine.Prize.Y);
 
-    var apress = (IntExpr)ctx.MkConst("apress", ctx.IntSort);
-    var bpress = (IntExpr)ctx.MkConst("bpress", ctx.IntSort);
+    var apress = ctx.MkIntConst("apress");
+    var bpress = ctx.MkIntConst("bpress");
 
     var solver = ctx.MkSimpleSolver();
     solver.Assert(ctx.MkEq(px, ctx.MkAdd(ctx.MkMul(ax, apress), ctx.MkMul(bx, bpress))));
@@ -75,25 +75,26 @@ public class Day13
 
   static long Prize(Machine machine)
   {
-    var px = machine.Prize.X;
-    var py = machine.Prize.Y;
-
     var ax = machine.A.X;
     var bx = machine.B.X;
     var ay = machine.A.Y;
     var by = machine.B.Y;
+    var px = machine.Prize.X;
+    var py = machine.Prize.Y;
 
-    var det = ax * by - bx * ay;
+    var denominator = ax * by - ay * bx;
+    var numerator = ax * py - ay * px;
 
-    if (det == 0) return 0; // No solution or infinite solutions
+    if (denominator == 0) return 0;
+    if (numerator % denominator != 0) return 0;
 
-    var pressA = (px * by - py * bx) / det;
-    var pressB = (py * ax - px * ay) / det;
+    var bpress = numerator / denominator;
 
-    if (pressA >= 0 && pressB >= 0 && ((px * by - py * bx) % det == 0) && ((py * ax - px * ay) % det == 0))
-        return (pressA * 3) + pressB;
+    var apress = (px - bx * bpress) / ax;
 
-    return 0;
+    if ((px - bx * bpress) % ax != 0) return 0;
+
+    return apress * 3 + bpress;
   }
 
   private static List<Machine> FormatInput(List<string> input)
