@@ -1,9 +1,4 @@
-using Parser;
-
 namespace AdventOfCode2024.CSharp.Tests;
-
-using P = Parser.ParserBuiltins;
-
 public class JsonParser
 {
   public interface IJsonObject {}

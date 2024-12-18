@@ -1,6 +1,3 @@
-using System.Collections.Generic;
-using System.Linq;
-
 namespace AdventOfCode2024.CSharp.Utils;
 
 public static class StringExtensions

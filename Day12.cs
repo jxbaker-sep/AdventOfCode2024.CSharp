@@ -1,11 +1,7 @@
-
-using System.Net.Security;
-using System.Runtime.CompilerServices;
 using AdventOfCode2024.CSharp.Utils;
 using FluentAssertions;
 using Parser;
 using Utils;
-using P = Parser.ParserBuiltins;
 namespace AdventOfCode2024.CSharp.Day12;
 
 public class Day12

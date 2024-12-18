@@ -1,5 +1,3 @@
-using System.IO;
-
 namespace Utils;
 
 public static class AoCLoader

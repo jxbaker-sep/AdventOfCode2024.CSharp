@@ -1,7 +1,3 @@
-using System.Collections.Generic;
-using System.Net;
-using Microsoft.VisualStudio.TestPlatform.ObjectModel;
-
 namespace Utils;
 
 public static class EnumerableExtensions
