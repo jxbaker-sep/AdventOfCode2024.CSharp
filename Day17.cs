@@ -131,7 +131,7 @@ public class Day17
       return (program, output);
   }
 
-  long LongPow2(long y) {
+  private long LongPow2(long y) {
     var result = 1L;
     for(long x = 0; x < y; x++) result *= 2;
     return result;

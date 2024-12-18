@@ -6,6 +6,8 @@ using FluentAssertions;
 using Parser;
 using Utils;
 using P = Parser.ParserBuiltins;
+using Microsoft.Z3;
+using System.Diagnostics.Contracts;
 namespace AdventOfCode2024.CSharp.Day13;
 
 using Machine = (Vector A, Vector B, Point Prize);
@@ -22,13 +24,53 @@ public class Day13
   }
 
   [Theory]
+  [InlineData("Day13.Sample", 480)]
+  [InlineData("Day13", 35574L)]
+  public void Part1_z3(string file, long expected)
+  {
+    var input = FormatInput(AoCLoader.LoadLines(file));
+    input.Select(it => Prize_z3(it)).Sum().Should().Be(expected);
+  }
+
+  [Theory]
   [InlineData("Day13.Sample", 875318608908L)]
-  [InlineData("Day13", 80882098756071)] // 474697749331L too low, 81356796472639 too high
+  [InlineData("Day13", 80882098756071)]
   public void Part2(string file, long expected)
   {
     var input = FormatInput(AoCLoader.LoadLines(file));
     var scale = 10000000000000;
     input.Select(it => Prize((it.A, it.B, new Point(it.Prize.Y + scale, it.Prize.X + scale)))).Sum().Should().Be(expected);
+  }
+
+  [Theory]
+  [InlineData("Day13.Sample", 875318608908L)]
+  [InlineData("Day13", 80882098756071)]
+  public void Part2_z3(string file, long expected)
+  {
+    var input = FormatInput(AoCLoader.LoadLines(file));
+    var scale = 10000000000000;
+    input.Select(it => Prize_z3((it.A, it.B, new Point(it.Prize.Y + scale, it.Prize.X + scale)))).Sum().Should().Be(expected);
+  }
+
+  static long Prize_z3(Machine machine)
+  {
+    using Context ctx = new(new Dictionary<string, string>() { { "proof", "true" } });
+    var ax = ctx.MkInt(machine.A.X);
+    var ay = ctx.MkInt(machine.A.Y);
+    var bx = ctx.MkInt(machine.B.X);
+    var by = ctx.MkInt(machine.B.Y);
+    var px = ctx.MkInt(machine.Prize.X);
+    var py = ctx.MkInt(machine.Prize.Y);
+
+    var apress = (IntExpr)ctx.MkConst("apress", ctx.IntSort);
+    var bpress = (IntExpr)ctx.MkConst("bpress", ctx.IntSort);
+
+    var solver = ctx.MkSimpleSolver();
+    solver.Assert(ctx.MkEq(px, ctx.MkAdd(ctx.MkMul(ax, apress), ctx.MkMul(bx, bpress))));
+    solver.Assert(ctx.MkEq(py, ctx.MkAdd(ctx.MkMul(ay, apress), ctx.MkMul(by, bpress))));
+
+    if (solver.Check() != Status.SATISFIABLE) return 0;
+    return ((IntNum)solver.Model.ConstInterp(apress)).Int64 * 3 + ((IntNum)solver.Model.ConstInterp(bpress)).Int64;
   }
 
   static long Prize(Machine machine)
