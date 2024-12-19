@@ -2,7 +2,6 @@ using FluentAssertions;
 using Parser;
 using P = Parser.ParserBuiltins;
 using Utils;
-using AdventOfCode2024.CSharp.Utils;
 
 namespace AdventOfCode2024.CSharp.Day19;
 
@@ -63,12 +62,11 @@ public class Day19
     return false;
   }
 
-public record Onsen(IReadOnlyList<string> Towels, IReadOnlyList<string> Patterns);
+  public record Onsen(IReadOnlyList<string> Towels, IReadOnlyList<string> Patterns);
 
-private static Onsen FormatInput(string input)
-{
-  var pps = input.Split("\n\n").Select(pp => pp.Split("\n").ToList()).ToList();
-  var sp = P.Letter.Plus().Join().Trim();
-  return new(sp.Plus(",").Parse(pps[0].Single()), sp.ParseMany(pps[1]));
-}
+  private static Onsen FormatInput(string input)
+  {
+    var sp = P.Letter.Plus().Join().Trim();
+    return P.Format("{} {}", sp.Plus(","), sp.Plus()).Select(it => new Onsen(it.First, it.Second)).Parse(input);
+  }
 }
