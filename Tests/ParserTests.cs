@@ -316,4 +316,25 @@ public class ParserTests
         P.Format("Before{}After", P.Long).Parse("Before 123 After").Should().Be(123);
         P.Format("Before{}After{}Ending", P.Long, P.Long).Parse("Before 123 After 345 Ending").Should().Be((123, 345));
     }
+
+    [Theory]
+    [InlineData("ABA", true)]
+    [InlineData("BBA", false)]
+    [InlineData("ABB", false)]
+    [InlineData("ABAB", false)]
+    [InlineData("AABA", true)]
+    [InlineData("AABABBABABABAAAAABABA", true)]
+    [InlineData("AAAAAAAAAAAAAAAAAAABA", true)]
+    [InlineData("ABBBBBBBBBBBBBBBBBBBA", true)]
+    [InlineData("ABBBBBBBBBBBBBBBBBBBB", false)]
+    public void ABABATest(string input, bool expected)
+    {
+        // like regex A(A|B)*AB
+        var a = P.String("A");
+        var b = P.String("B");
+        var parser = P.Sequence(a, (a|b).Until((b+a).End())).Void();
+        var output = parser.Parse(input.ToCharArray(), 0);
+        if (expected) output.Should().BeOfType<ParseSuccess<P.Void>>();
+        else output.Should().BeOfType<ParseFailure<P.Void>>();
+    }
 }
