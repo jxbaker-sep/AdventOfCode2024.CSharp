@@ -18,7 +18,7 @@ public class Day04
     {
       for (var x = 0; x < data[0].Count; x++)
       {
-        count += Vector.CompassPoints.Count(v => CanRead("XMAS", y, x, data, v));
+        count += Vector.CompassRose.Count(v => CanRead("XMAS", y, x, data, v));
       }
     }
 

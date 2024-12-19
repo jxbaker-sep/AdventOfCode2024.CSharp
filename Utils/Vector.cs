@@ -16,7 +16,7 @@ public record Vector(long Y, long X) {
 
   public static IEnumerable<Vector> Cardinals {get;} = [North, East, South, West];
   public static IEnumerable<Vector> InterCardinals {get;} = [NorthEast, SouthEast, SouthWest, NorthWest];
-  public static IEnumerable<Vector> CompassPoints {get;} = [North, NorthEast, East, SouthEast, South, SouthWest, West, NorthWest];
+  public static IEnumerable<Vector> CompassRose {get;} = [North, NorthEast, East, SouthEast, South, SouthWest, West, NorthWest];
 
   public static Vector operator+(Vector v1, Vector v2) => new(v1.Y + v2.Y, v1.X + v2.X);
 
