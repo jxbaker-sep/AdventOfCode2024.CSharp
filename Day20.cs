@@ -24,7 +24,7 @@ public class Day20
   }
 
   [Theory]
-  [InlineData("Day20", 0)]
+  [InlineData("Day20", 1008040)]
   public void Part2(string file, long expected) // 983111 too low
   {
     var grid = FormatInput(AoCLoader.LoadLines(file));
@@ -100,16 +100,11 @@ public class Day20
   {
     Dictionary<(Point, Point), long> result = [];
 
-    foreach(var wall in grid.Where(kv => kv.Value == '.').Select(it => it.Key)) {
-      foreach (var v in Vector.Cardinals) {
-        var previous = wall - v;
-        if (!distances.TryGetValue(previous, out var k_previous)) continue;
-        foreach (var (next, k_next) in distances.Where(kv => 
-          kv.Key.ManhattanDistance(wall) <= 19  
-          && kv.Key.ManhattanDistance(previous) <= 20
-          && kv.Value < distances[previous] -  kv.Key.ManhattanDistance(previous))) {
-            result[(previous, next)] = k_previous - k_next - next.ManhattanDistance(previous);
-        }
+    foreach(var (first, k_first) in distances) {
+      foreach (var (next, k_next) in distances.Where(kv =>
+        kv.Key.ManhattanDistance(first) <= 20
+        && kv.Value < k_first -  kv.Key.ManhattanDistance(first))) {
+          result[(first, next)] = k_first - k_next - next.ManhattanDistance(first);
       }
     }
     return result.Values.ToList();
