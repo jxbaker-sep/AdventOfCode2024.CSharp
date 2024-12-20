@@ -84,9 +84,12 @@ public class Day20
   {
     Dictionary<(Point, Point), long> result = [];
 
+    var maxx = distances.Keys.Select(it => it.X).Max();
+    var maxy = distances.Keys.Select(it => it.Y).Max();
+
     foreach(var (first, k_first) in distances) {
-      foreach(var y in MiscUtils.LongRange(first.Y - cheatDistance, cheatDistance * 2 + 1)) {
-        foreach(var x in MiscUtils.LongRange(first.X - cheatDistance, cheatDistance * 2 + 1)) {
+      foreach(var y in MiscUtils.InclusiveRange(Math.Max(first.Y - cheatDistance, 0), Math.Min(first.Y + cheatDistance, maxy))) {
+        foreach(var x in MiscUtils.InclusiveRange(Math.Max(first.X - cheatDistance, 0), Math.Min(first.X + cheatDistance, maxx))) {
           var next = new Point(y, x);
           if (next.ManhattanDistance(first) > cheatDistance) continue;
           if (distances.TryGetValue(next, out var k_next)) {
