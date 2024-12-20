@@ -19,7 +19,7 @@ public class Day20
   {
     var grid = FormatInput(AoCLoader.LoadLines(file));
     var distances = GetDistancesToGoal(grid);
-    var savings = ComputeSavings(grid, distances);
+    var savings = ComputeSavings(distances, 2);
     savings.Count(it => it >= 100).Should().Be(expected);
   }
 
@@ -29,7 +29,7 @@ public class Day20
   {
     var grid = FormatInput(AoCLoader.LoadLines(file));
     var distances = GetDistancesToGoal(grid);
-    var savings = ComputeAdditionalSavings(grid, distances);
+    var savings = ComputeSavings(distances, 20);
     savings.LongCount(it => it >= 100).Should().Be(expected);
   }
 
@@ -41,7 +41,7 @@ public class Day20
     var distances = GetDistancesToGoal(grid);
     distances[start].Should().Be(84);
 
-    var savings = ComputeSavings(grid, distances);
+    var savings = ComputeSavings(distances, 2);
     savings.Count(it => it == 2).Should().Be(14);
     savings.Count(it => it == 4).Should().Be(14);
     savings.Count(it => it == 6).Should().Be(2);
@@ -63,7 +63,7 @@ public class Day20
     var distances = GetDistancesToGoal(grid);
     distances[start].Should().Be(84);
 
-    var savings = ComputeAdditionalSavings(grid, distances);
+    var savings = ComputeSavings(distances, 20);
     savings.Count(it => it == 50).Should().Be(32);
     savings.Count(it => it == 52).Should().Be(31);
     savings.Count(it => it == 54).Should().Be(29);
@@ -80,29 +80,13 @@ public class Day20
     savings.Count(it => it == 76).Should().Be(3);
   }
 
-  private List<long> ComputeSavings(Dictionary<Point, char> grid, Dictionary<Point, long> distances)
-  {
-    List<long> result = [];
-
-    foreach(var wall in grid.Where(kv => kv.Value == '#').Select(it => it.Key)) {
-      foreach (var v in Vector.Cardinals) {
-        var next = wall + v;
-        var previous = wall - v;
-        if (distances.TryGetValue(next, out var k_next) && distances.TryGetValue(previous, out var k_previous)) {
-          if (k_previous > k_next) result.Add(k_previous - k_next - 2);
-        }
-      }
-    }
-    return result;
-  }
-
-  private List<long> ComputeAdditionalSavings(Dictionary<Point, char> grid, Dictionary<Point, long> distances)
+  private List<long> ComputeSavings(Dictionary<Point, long> distances, long cheatDistance)
   {
     Dictionary<(Point, Point), long> result = [];
 
     foreach(var (first, k_first) in distances) {
       foreach (var (next, k_next) in distances.Where(kv =>
-        kv.Key.ManhattanDistance(first) <= 20
+        kv.Key.ManhattanDistance(first) <= cheatDistance
         && kv.Value < k_first -  kv.Key.ManhattanDistance(first))) {
           result[(first, next)] = k_first - k_next - next.ManhattanDistance(first);
       }
