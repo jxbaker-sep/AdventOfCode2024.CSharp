@@ -96,17 +96,17 @@ public class Day20
 
   Dictionary<Point, long> GetDistancesToGoal(Dictionary<Point, char> grid) {
     var end = grid.Single(kv => kv.Value == End).Key;
-    Dictionary<Point, long> closed = [];
-    closed[end] = 0;
-    Queue<Point> open = [];
-    open.Enqueue(end);
+    var closed = new Dictionary<Point, long> {
+      { end, 0 }
+    };
+    var open = new Queue<Point>([end]);
 
     while (open.TryDequeue(out var current)) {
       var cd = closed[current];
       foreach(var v in Vector.Cardinals) {
         var next = current + v;
         if (closed.ContainsKey(next)) continue;
-        if (grid[next] == '#') continue;
+        if (grid[next] == Wall) continue;
         closed[next] = cd + 1;
         open.Enqueue(next);
       }
