@@ -23,6 +23,16 @@ public class Day20
     savings.Count(it => it >= 100).Should().Be(expected);
   }
 
+  [Theory]
+  [InlineData("Day20", 0)]
+  public void Part2(string file, long expected) // 983111 too low
+  {
+    var grid = FormatInput(AoCLoader.LoadLines(file));
+    var distances = GetDistancesToGoal(grid);
+    var savings = ComputeAdditionalSavings(grid, distances);
+    savings.LongCount(it => it >= 100).Should().Be(expected);
+  }
+
   [Fact]
   public void Part1SanityCheck() {
     var grid = FormatInput(AoCLoader.LoadLines("Day20.Sample"));
@@ -45,6 +55,31 @@ public class Day20
     savings.Count(it => it == 64).Should().Be(1);
   }
 
+  [Fact]
+  public void Part2SanityCheck() {
+    var grid = FormatInput(AoCLoader.LoadLines("Day20.Sample"));
+    var start = grid.Single(kv => kv.Value == Start).Key;
+
+    var distances = GetDistancesToGoal(grid);
+    distances[start].Should().Be(84);
+
+    var savings = ComputeAdditionalSavings(grid, distances);
+    savings.Count(it => it == 50).Should().Be(32);
+    savings.Count(it => it == 52).Should().Be(31);
+    savings.Count(it => it == 54).Should().Be(29);
+    savings.Count(it => it == 56).Should().Be(39);
+    savings.Count(it => it == 58).Should().Be(25);
+    savings.Count(it => it == 60).Should().Be(23);
+    savings.Count(it => it == 62).Should().Be(20);
+    savings.Count(it => it == 64).Should().Be(19);
+    savings.Count(it => it == 66).Should().Be(12);
+    savings.Count(it => it == 68).Should().Be(14);
+    savings.Count(it => it == 70).Should().Be(12);
+    savings.Count(it => it == 72).Should().Be(22);
+    savings.Count(it => it == 74).Should().Be(4);
+    savings.Count(it => it == 76).Should().Be(3);
+  }
+
   private List<long> ComputeSavings(Dictionary<Point, char> grid, Dictionary<Point, long> distances)
   {
     List<long> result = [];
@@ -53,12 +88,31 @@ public class Day20
       foreach (var v in Vector.Cardinals) {
         var next = wall + v;
         var previous = wall - v;
-        if (distances.TryGetValue(next, out var n) && distances.TryGetValue(previous, out var p)) {
-          if (p > n) result.Add(p - n - 2);
+        if (distances.TryGetValue(next, out var k_next) && distances.TryGetValue(previous, out var k_previous)) {
+          if (k_previous > k_next) result.Add(k_previous - k_next - 2);
         }
       }
     }
     return result;
+  }
+
+  private List<long> ComputeAdditionalSavings(Dictionary<Point, char> grid, Dictionary<Point, long> distances)
+  {
+    Dictionary<(Point, Point), long> result = [];
+
+    foreach(var wall in grid.Where(kv => kv.Value == '.').Select(it => it.Key)) {
+      foreach (var v in Vector.Cardinals) {
+        var previous = wall - v;
+        if (!distances.TryGetValue(previous, out var k_previous)) continue;
+        foreach (var (next, k_next) in distances.Where(kv => 
+          kv.Key.ManhattanDistance(wall) <= 19  
+          && kv.Key.ManhattanDistance(previous) <= 20
+          && kv.Value < distances[previous] -  kv.Key.ManhattanDistance(previous))) {
+            result[(previous, next)] = k_previous - k_next - next.ManhattanDistance(previous);
+        }
+      }
+    }
+    return result.Values.ToList();
   }
 
   Dictionary<Point, long> GetDistancesToGoal(Dictionary<Point, char> grid) {
