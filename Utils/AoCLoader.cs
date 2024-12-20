@@ -1,4 +1,4 @@
-namespace Utils;
+namespace AdventOfCode2024.CSharp.Utils;
 
 public static class AoCLoader
 {
