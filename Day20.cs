@@ -92,10 +92,8 @@ public class Day20
         foreach(var x in MiscUtils.InclusiveRange(Math.Max(first.X - cheatDistance, 0), Math.Min(first.X + cheatDistance, maxx))) {
           var next = new Point(y, x);
           if (next.ManhattanDistance(first) > cheatDistance) continue;
-          if (distances.TryGetValue(next, out var k_next)) {
-            if (k_next < k_first - next.ManhattanDistance(first)) {
-              result[(first, next)] = k_first - k_next - next.ManhattanDistance(first);
-            }
+          if (distances.TryGetValue(next, out var k_next) && k_next < k_first - next.ManhattanDistance(first)) {
+            result[(first, next)] = k_first - k_next - next.ManhattanDistance(first);
           }
         }
       }
