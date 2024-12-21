@@ -100,7 +100,7 @@ public class Day21
   {
     if (NumericKeypadRoutesCache.TryGetValue((start, goal), out var routes)) return routes;
     
-    List<string> result = Djikstra(start, goal, NumericKeypad);
+    List<string> result = Djikstra(start, goal, NumericKeypad).ToList();
 
     NumericKeypadRoutesCache[(start, goal)] = result;
     return result;
@@ -115,13 +115,13 @@ public class Day21
   public List<string> DPadRoutes(char start, char goal)
   {
     if (DPadRouteCache.TryGetValue((start, goal), out var routes)) return routes;
-    List<string> result = Djikstra(start, goal, DPad);
+    List<string> result = Djikstra(start, goal, DPad).ToList();
 
     DPadRouteCache[(start, goal)] = result;
     return result;
   }
 
-private static List<string> Djikstra(char start, char goal, IReadOnlyDictionary<char, Point> keypad)
+private static List<string> Djikstra_old(char start, char goal, IReadOnlyDictionary<char, Point> keypad)
   {
     var p1 = keypad[start];
     var p2 = keypad[goal];
@@ -143,7 +143,7 @@ private static List<string> Djikstra(char start, char goal, IReadOnlyDictionary<
     return result;
   }
 
-  private static IEnumerable<string> Djikstra_new(char start, char goal, IReadOnlyDictionary<char, Point> keypad)
+  private static IEnumerable<string> Djikstra(char start, char goal, IReadOnlyDictionary<char, Point> keypad)
   {
     var p1 = keypad[start];
     var p2 = keypad[goal];
