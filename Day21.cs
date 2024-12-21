@@ -26,6 +26,7 @@ public class Day21
   public IEnumerable<string> CommandRobots(string code, int numberOfDpadRobots)
   {
     if (numberOfDpadRobots == 0) return NumericKeypadRobot('A', code);
+    Console.WriteLine(numberOfDpadRobots);
     var result = CommandRobots(code, numberOfDpadRobots - 1).SelectMany(it => DPadRobot('A', it)).ToList();
     var min = result.Select(it => it.Length).Min();
     return result.Where(it => it.Length == min);
