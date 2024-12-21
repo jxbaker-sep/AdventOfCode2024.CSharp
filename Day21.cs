@@ -7,108 +7,44 @@ namespace AdventOfCode2024.CSharp.Day21;
 public class Day21
 {
   [Theory]
-  [InlineData("Day21.Sample", 126384)]
-  [InlineData("Day21", 157892)]
-  public void Part1(string file, long expected)
+  [InlineData("Day21.Sample", 2, 126384)]
+  [InlineData("Day21", 2, 157892)]
+  [InlineData("Day21", 25, 197015606336332L)]
+  public void Part1(string file, int numberOfDpadRobots, long expected)
   {
     var codes = AoCLoader.LoadLines(file);
     codes.Sum(code =>
       {
-        var min = CommandRobots(code, 2)
-        .Select(it => it.Length)
-        .Min();
+        var min = CommandRobots(code, numberOfDpadRobots);
         var n = Convert.ToInt64(code[..^1]);
         return n * min;
       }
     ).Should().Be(expected);
   }
 
-  public IEnumerable<string> CommandRobots(string code, int numberOfDpadRobots)
-  {
-    if (numberOfDpadRobots == 0) return NumericKeypadRobot('A', code);
-    Console.WriteLine(numberOfDpadRobots);
-    var result = CommandRobots(code, numberOfDpadRobots - 1).SelectMany(it => DPadRobot('A', it)).ToList();
-    var min = result.Select(it => it.Length).Min();
-    return result.Where(it => it.Length == min);
+  public long CommandRobots(string code, int numberOfDpadRobots) {
+    code = "A" + code;
+    long total = 0;
+    for(var i = 0; i < code.Length - 1; i++) {
+      total += NumericKeypadRoutes(code[i], code[i+1]).Select(route => CommandDpadRobots(route, numberOfDpadRobots)).Min();
+    }
+    return total;
   }
 
-  [Fact]
-  public void Sanity()
+  private readonly Dictionary<(string, int), long> CodeCache = [];
+
+  public long CommandDpadRobots(string code, int numberOfDpadRobots)
   {
-    NumericKeypadRoutes('A', '0').Should().BeEquivalentTo(new[] { "<A" });
-    NumericKeypadRoutes('9', '1').Should().BeEquivalentTo(new[] { "<<vvA", "<v<vA", "<vv<A", "v<<vA", "v<v<A", "vv<<A" });
-    NumericKeypadRoutes('0', '8').Should().BeEquivalentTo(new[] { "^^^A" });
-    NumericKeypadRoutes('8', '0').Should().BeEquivalentTo(new[] { "vvvA" });
-    NumericKeypadRoutes('5', '1').Should().BeEquivalentTo(new[] { "v<A", "<vA" });
-    NumericKeypadRoutes('1', '5').Should().BeEquivalentTo(new[] { "^>A", ">^A" });
-
-    NumericKeypadRobot('A', "029A").Should().Contain(new[] { "<A^A>^^AvvvA", "<A^A^>^AvvvA", "<A^A^^>AvvvA" });
-
-    NumericKeypadRobot('A', "029A").SelectMany(r0 => DPadRobot('A', r0)).Should().Contain("v<<A>>^A<A>AvA<^AA>A<vAAA>^A");
-
-    var temp = NumericKeypadRobot('A', "029A")
-      .SelectMany(r0 => DPadRobot('A', r0))
-      .GroupBy(it => it.Length)
-      .ToDictionary(it => it.Key, it => it.ToList());
-
-
-    "029A".ToCharArray()
-      .Aggregate(('A', 0L), (a, b) => (b, a.Item2 + Count(NumericKeypad, a.Item1, b)))
-      .Item2.Should().Be("<A^A>^^AvvvA".Length);
-  }
-
-  public long Count(IReadOnlyDictionary<char, Point> pad, char start, char goal)
-  {
-    return pad[start].ManhattanDistance(pad[goal]) + 1; // +1 to press "A"
-  }
-
-  Dictionary<(char, string), List<string>> NumericKeypadRobotCache = [];
-  public IEnumerable<string> NumericKeypadRobot(char current, string input)
-  {
-    if (input == "") return [""];
-    if (input.Length == 1) return NumericKeypadRoutes(current, input[0]);
-    if (NumericKeypadRobotCache.TryGetValue((current, input), out var cached)) return cached;
-    List<string> routes = [];
-    var paths = NumericKeypadRoutes(current, input[0]);
-    foreach (var sub in NumericKeypadRobot(input[0], input[1..]))
-    {
-      routes.AddRange(paths.Select(p => p + sub));
+    if (numberOfDpadRobots == 0) return code.Length;
+    code = $"A{code}";
+    if (CodeCache.TryGetValue((code, numberOfDpadRobots), out var cached)) {return cached;}
+    long total = 0;
+    for(var i = 0; i < code.Length - 1; i++) {
+      total += DPadRoutes(code[i], code[i+1]).Select(route => CommandDpadRobots(route, numberOfDpadRobots - 1)).Min();
     }
 
-    routes = routes.Distinct().ToList(); // WHY???
-    NumericKeypadRobotCache[(current, input)] = routes;
-    return routes;
-  }
-
-  Dictionary<(char, string), List<string>> DPadRobotCache = [];
-  public IEnumerable<string> DPadRobot(char current, string input)
-  {
-    if (input == "") return [""];
-    if (input.Length == 1) return DPadRoutes(current, input[0]);
-    if (DPadRobotCache.TryGetValue((current, input), out var cached)) return cached;
-    List<string> routes = [];
-    for (var i = 1; i < input.Length - 1; i++)
-    {
-      var input2 = input[..^i];
-      if (DPadRobotCache.TryGetValue((current, input2), out var cached2))
-      {
-        foreach (var sub in DPadRobot(input2[^1], input[input2.Length..]))
-        {
-          routes.AddRange(cached2.Select(p => p + sub));
-        }
-        routes = routes.Distinct().ToList(); // WHY????
-        DPadRobotCache[(current, input)] = routes;
-        return routes;
-      }
-    }
-    var paths = DPadRoutes(current, input[0]);
-    foreach (var sub in DPadRobot(input[0], input[1..]))
-    {
-      routes.AddRange(paths.Select(p => p + sub));
-    }
-    routes = routes.Distinct().ToList(); // WHY????
-    DPadRobotCache[(current, input)] = routes;
-    return routes;
+    CodeCache[(code, numberOfDpadRobots)] = total;
+    return total;
   }
 
   readonly IReadOnlyDictionary<char, Point> NumericKeypad = new Dictionary<char, Point>{
@@ -118,7 +54,7 @@ public class Day21
                           { '0', new(3, 1) }, { 'A', new(3, 2) },
     };
 
-  Dictionary<(char, char), List<string>> NumericKeypadRoutesCache = [];
+  readonly Dictionary<(char, char), List<string>> NumericKeypadRoutesCache = [];
   public List<string> NumericKeypadRoutes(char start, char goal)
   {
     if (NumericKeypadRoutesCache.TryGetValue((start, goal), out var routes)) return routes;
@@ -134,7 +70,7 @@ public class Day21
       { '<', new(1, 0) }, { 'v', new(1, 1) }, { '>', new(1, 2) },
     };
 
-  Dictionary<(char, char), List<string>> DPadRouteCache = [];
+  readonly Dictionary<(char, char), List<string>> DPadRouteCache = [];
   public List<string> DPadRoutes(char start, char goal)
   {
     if (DPadRouteCache.TryGetValue((start, goal), out var routes)) return routes;
@@ -144,27 +80,6 @@ public class Day21
     return result;
   }
 
-  private static List<string> Djikstra_old(char start, char goal, IReadOnlyDictionary<char, Point> keypad)
-  {
-    var p1 = keypad[start];
-    var p2 = keypad[goal];
-    var result = new List<string>();
-    var open = new Queue<(Point Point, string Path)>([(p1, "")]);
-    while (open.TryDequeue(out var current))
-    {
-      if (current.Point == p2)
-      {
-        result.Add(current.Path + "A");
-        continue;
-      }
-      if (current.Point.X < p2.X && keypad.Values.Contains(current.Point + Vector.East)) open.Enqueue((current.Point + Vector.East, current.Path + ">"));
-      else if (current.Point.X > p2.X && keypad.Values.Contains(current.Point + Vector.West)) open.Enqueue((current.Point + Vector.West, current.Path + "<"));
-      if (current.Point.Y < p2.Y && keypad.Values.Contains(current.Point + Vector.South)) open.Enqueue((current.Point + Vector.South, current.Path + "v"));
-      else if (current.Point.Y > p2.Y && keypad.Values.Contains(current.Point + Vector.North)) open.Enqueue((current.Point + Vector.North, current.Path + "^"));
-    }
-
-    return result;
-  }
 
   private static IEnumerable<string> Djikstra(char start, char goal, IReadOnlyDictionary<char, Point> keypad)
   {
