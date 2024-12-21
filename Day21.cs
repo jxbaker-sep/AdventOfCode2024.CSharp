@@ -2,6 +2,8 @@ using System.Runtime.Serialization;
 using AdventOfCode2024.CSharp.Utils;
 using FluentAssertions;
 using Microsoft.VisualBasic;
+using Microsoft.VisualStudio.TestPlatform.ObjectModel.Host;
+using Utils;
 
 namespace AdventOfCode2024.CSharp.Day21;
 
@@ -28,31 +30,30 @@ public class Day21
     ).Should().Be(expected);
   }
 
-  // [Fact]
-  // public void Part1SanityCheck()
-  // {
-  //   NumericKeypadRoutes('A', '0').Should().BeEquivalentTo(new[]{"<A"});
-  //   NumericKeypadRoutes('9', '1').Should().BeEquivalentTo(new[]{"<<vvA", "<v<vA", "<vv<A", "v<<vA", "v<v<A", "vv<<A"});
-  //   NumericKeypadRoutes('0', '8').Should().BeEquivalentTo(new[]{"^^^A"});
-  //   NumericKeypadRoutes('8', '0').Should().BeEquivalentTo(new[]{"vvvA"});
-  //   NumericKeypadRoutes('5', '1').Should().BeEquivalentTo(new[]{"v<A", "<vA"});
-  //   NumericKeypadRoutes('1', '5').Should().BeEquivalentTo(new[]{"^>A", ">^A"});
+  [Fact]
+  public void Part1SanityCheck()
+  {
+    NumericKeypadRoutes('A', '0').Should().BeEquivalentTo(new[]{"<A"});
+    NumericKeypadRoutes('9', '1').Should().BeEquivalentTo(new[]{"<<vvA", "<v<vA", "<vv<A", "v<<vA", "v<v<A", "vv<<A"});
+    NumericKeypadRoutes('0', '8').Should().BeEquivalentTo(new[]{"^^^A"});
+    NumericKeypadRoutes('8', '0').Should().BeEquivalentTo(new[]{"vvvA"});
+    NumericKeypadRoutes('5', '1').Should().BeEquivalentTo(new[]{"v<A", "<vA"});
+    NumericKeypadRoutes('1', '5').Should().BeEquivalentTo(new[]{"^>A", ">^A"});
 
-  //   NumericKeypadRobot('A', "029A").Should().Contain(new[]{"<A^A>^^AvvvA", "<A^A^>^AvvvA", "<A^A^^>AvvvA"});
+    NumericKeypadRobot('A', "029A").Should().Contain(new[]{"<A^A>^^AvvvA", "<A^A^>^AvvvA", "<A^A^^>AvvvA"});
 
-  //   NumericKeypadRobot('A', "029A").SelectMany(r0 => DPadRobot('A', r0)).Should().Contain("v<<A>>^A<A>AvA<^AA>A<vAAA>^A");
+    NumericKeypadRobot('A', "029A").SelectMany(r0 => DPadRobot('A', r0)).Should().Contain("v<<A>>^A<A>AvA<^AA>A<vAAA>^A");
 
-  //   // Robot0('A', "029A")
-  //   //   .SelectMany(r0 => DirectionKeypadRobot('A', r0))
-  //   //   .SelectMany(r1 => DirectionKeypadRobot('A', r1))
-  //   //   .Count().Should().Be(0);
-  //     // .Should().Contain("v<<A>>^A<A>AvA<^AA>A<vAAA>^A");
+    var temp = NumericKeypadRobot('A', "029A")
+      .SelectMany(r0 => DPadRobot('A', r0))
+      .GroupBy(it => it.Length)
+      .ToDictionary(it => it.Key, it => it.ToList());
 
 
-  //   "029A".ToCharArray()
-  //     .Aggregate(('A', 0L), (a, b) => (b, a.Item2 + Count(NumericKeypad, a.Item1, b)))
-  //     .Item2.Should().Be("<A^A>^^AvvvA".Length);
-  // }
+    "029A".ToCharArray()
+      .Aggregate(('A', 0L), (a, b) => (b, a.Item2 + Count(NumericKeypad, a.Item1, b)))
+      .Item2.Should().Be("<A^A>^^AvvvA".Length);
+  }
 
   public long Count(IReadOnlyDictionary<char, Point> pad, char start, char goal) {
     return pad[start].ManhattanDistance(pad[goal]) + 1; // +1 to press "A"
@@ -120,7 +121,7 @@ public class Day21
     return result;
   }
 
-  private static List<string> Djikstra(char start, char goal, IReadOnlyDictionary<char, Point> keypad)
+private static List<string> Djikstra(char start, char goal, IReadOnlyDictionary<char, Point> keypad)
   {
     var p1 = keypad[start];
     var p2 = keypad[goal];
@@ -134,11 +135,35 @@ public class Day21
         continue;
       }
       if (current.Point.X < p2.X && keypad.Values.Contains(current.Point + Vector.East)) open.Enqueue((current.Point + Vector.East, current.Path + ">"));
-      if (current.Point.X > p2.X && keypad.Values.Contains(current.Point + Vector.West)) open.Enqueue((current.Point + Vector.West, current.Path + "<"));
+      else if (current.Point.X > p2.X && keypad.Values.Contains(current.Point + Vector.West)) open.Enqueue((current.Point + Vector.West, current.Path + "<"));
       if (current.Point.Y < p2.Y && keypad.Values.Contains(current.Point + Vector.South)) open.Enqueue((current.Point + Vector.South, current.Path + "v"));
-      if (current.Point.Y > p2.Y && keypad.Values.Contains(current.Point + Vector.North)) open.Enqueue((current.Point + Vector.North, current.Path + "^"));
+      else if (current.Point.Y > p2.Y && keypad.Values.Contains(current.Point + Vector.North)) open.Enqueue((current.Point + Vector.North, current.Path + "^"));
     }
 
     return result;
+  }
+
+  private static IEnumerable<string> Djikstra_new(char start, char goal, IReadOnlyDictionary<char, Point> keypad)
+  {
+    var p1 = keypad[start];
+    var p2 = keypad[goal];
+
+    var lefts = p1.X < p2.X
+      ? (Vector.East, (int)(p2.X - p1.X), ">")
+      : (Vector.West, (int)(p1.X - p2.X), "<");
+
+    var downs = p1.Y < p2.Y
+      ? (Vector.South, (int)(p2.Y - p1.Y), "v")
+      : (Vector.North, (int)(p1.Y - p2.Y), "^");
+
+    if (keypad.Values.Contains(p1 + lefts.Item1 * lefts.Item2)) {
+      yield return Enumerable.Repeat(lefts.Item3, lefts.Item2).Join() + 
+                   Enumerable.Repeat(downs.Item3, downs.Item2).Join() + "A";
+    }
+    if (keypad.Values.Contains(p1 + downs.Item1 * downs.Item2)) {
+      yield return Enumerable.Repeat(downs.Item3, downs.Item2).Join() + 
+                   Enumerable.Repeat(lefts.Item3, lefts.Item2).Join() + 
+                   "A";
+    }
   }
 }

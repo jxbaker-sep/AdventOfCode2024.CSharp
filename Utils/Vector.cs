@@ -19,6 +19,7 @@ public record Vector(long Y, long X) {
   public static IEnumerable<Vector> CompassRose {get;} = [North, NorthEast, East, SouthEast, South, SouthWest, West, NorthWest];
 
   public static Vector operator+(Vector v1, Vector v2) => new(v1.Y + v2.Y, v1.X + v2.X);
+  public static Vector operator*(Vector v1, long v2) => new(v1.Y * v2, v1.X * v2);
 
   internal Vector RotateRight() => new(X, -Y);
   internal Vector RotateLeft() => new(-X, Y);
