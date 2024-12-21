@@ -18,20 +18,26 @@ public class Day21
     codes.Sum(code => 
       {
         var min = NumericKeypadRobot('A', code)
-        .SelectMany(r0 => DPadRobot('A', r0))
-        .Select(r1 => r1.Aggregate(('A', 0L), (a, b) => (b, a.Item2 + Count(DPad, a.Item1, b))).Item2)
+        .Select(r0 => {
+          var r1 = DPadRobot('A', r0);
+          var min = r1.Select(it => it.Length).Min();
+          return r1.First(it => it.Length == min);
+        })
+        .SelectMany(r1 => DPadRobot('A', r1))
+        .Select(it => it.Length)
+        // .Select(r1 => r1.Aggregate(('A', 0L), (a, b) => (b, a.Item2 + Count(DPad, a.Item1, b))).Item2)
         // .SelectMany(r1 => DPadRobot('A', r1))
         // .Select(it => it.Length)
         .Min(); 
         var n = Convert.ToInt64(code[..^1]);
-        Console.WriteLine($"{code}: {min} {n}");
+        // Console.WriteLine($"{code}: {min} {n}");
         return n * min;
       }
     ).Should().Be(expected);
   }
 
   [Fact]
-  public void Part1SanityCheck()
+  public void Sanity()
   {
     NumericKeypadRoutes('A', '0').Should().BeEquivalentTo(new[]{"<A"});
     NumericKeypadRoutes('9', '1').Should().BeEquivalentTo(new[]{"<<vvA", "<v<vA", "<vv<A", "v<<vA", "v<v<A", "vv<<A"});
@@ -70,7 +76,7 @@ public class Day21
       routes.AddRange(paths.Select(p => p + sub));
     }
 
-    NumericKeypadRobotCache[(current, input)] = routes;
+    NumericKeypadRobotCache[(current, input)] = routes.Distinct().ToList();
     return routes;
   }
 
@@ -84,6 +90,7 @@ public class Day21
     foreach(var sub in DPadRobot(input[0], input[1..])) {
       routes.AddRange(paths.Select(p => p + sub));
     }
+    routes = routes.Distinct().ToList(); // WHY????
     DPadRobotCache[(current, input)] = routes;
     return routes;
   }
