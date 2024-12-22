@@ -59,7 +59,7 @@ public class Day21
   {
     if (NumericKeypadRoutesCache.TryGetValue((start, goal), out var routes)) return routes;
 
-    var result = Djikstra(start, goal, NumericKeypad).ToList();
+    var result = FindRoute(start, goal, NumericKeypad).ToList();
 
     NumericKeypadRoutesCache[(start, goal)] = result;
     return result;
@@ -74,14 +74,13 @@ public class Day21
   public List<string> DPadRoutes(char start, char goal)
   {
     if (DPadRouteCache.TryGetValue((start, goal), out var routes)) return routes;
-    var result = Djikstra(start, goal, DPad).ToList();
+    var result = FindRoute(start, goal, DPad).ToList();
 
     DPadRouteCache[(start, goal)] = result;
     return result;
   }
 
-
-  private static IEnumerable<string> Djikstra(char start, char goal, IReadOnlyDictionary<char, Point> keypad)
+  private static IEnumerable<string> FindRoute(char start, char goal, IReadOnlyDictionary<char, Point> keypad)
   {
     if (start == goal)
     {
