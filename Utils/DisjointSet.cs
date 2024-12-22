@@ -1,63 +1,43 @@
 namespace AdventOfCode2024.CSharp.Utils;
 
-public class DisjointSet<T> where T : notnull
+public class DisjointSet
 {
+  private int Rank { get; set; } = 0;
+  private DisjointSet Parent;
 
-  private class Node(T Value, Node? Parent)
+  public DisjointSet()
   {
-    public readonly T Value = Value;
-    public int Rank { get; set; } = 0;
-    public Node? Parent = Parent;
+    Parent = this;
   }
 
-  private readonly Dictionary<T, Node> Forest = [];
-
-  public void MakeSet(T x)
+  public bool SameUnion(DisjointSet t2)
   {
-    if (Forest.ContainsKey(x)) return;
-    Forest[x] = new(x, null);
+    return Find() == t2.Find();
   }
 
-  public bool SameUnion(T t1, T t2)
+  public DisjointSet Find()
   {
-    return FindNode(Forest[t1]) == FindNode(Forest[t2]);
+    if (Parent == this) return this;
+    Parent = Parent.Find();
+    return Parent;
   }
 
-  public bool Contains(T x)
+  public void Union(DisjointSet y)
   {
-    return Forest.ContainsKey(x);
-  }
+    var parentX = Find();
+    var parentY = y.Find();
 
-  public T Find(T x)
-  {
-    return FindNode(Forest[x]).Value;
-  }
+    if (parentX == parentY) return;
 
-  private static Node FindNode(Node x)
-  {
-    if (x.Parent == null) return x;
-    x.Parent = FindNode(x.Parent);
-    return x.Parent;
-  }
-
-  public void Union(T x, T y)
-  {
-    MakeSet(x);
-    MakeSet(y);
-    var nodeX = FindNode(Forest[x]);
-    var nodeY = FindNode(Forest[y]);
-
-    if (nodeX == nodeY) return;
-
-    if (nodeX.Rank < nodeY.Rank)
+    if (parentX.Rank < parentY.Rank)
     {
-      (nodeY, nodeX) = (nodeX, nodeY);
+      (parentY, parentX) = (parentX, parentY);
     }
 
-    nodeY.Parent = nodeX;
-    if (nodeX.Rank == nodeY.Rank)
+    parentY.Parent = parentX;
+    if (parentX.Rank == parentY.Rank)
     {
-      nodeX.Rank += 1;
+      parentX.Rank += 1;
     }
   }
 }

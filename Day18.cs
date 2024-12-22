@@ -82,27 +82,38 @@ public class Day18
   {
     var walls = FormatInput(AoCLoader.LoadLines(file));
 
-    var leftWall = Enumerable.Range(0, size+1).Select(y => new Point(y, -1)).ToList();
-    var rightWall = Enumerable.Range(0, size+1).Select(y => new Point(y, size + 1)).ToList();
-    var topWall = Enumerable.Range(0, size+1).Select(x => new Point(-1, x)).ToList();
-    var bottomWall = Enumerable.Range(0, size+1).Select(x => new Point(size + 1, x)).ToList();
-    DisjointSet<Point> ds = new();
-    foreach(var set in new[]{leftWall, rightWall, topWall, bottomWall}) {
-      foreach(var item in set) ds.Union(set[0], item);
+    var closed = new Dictionary<Point, DisjointSet>();
+
+    DisjointSet MakeWall(Point first, Vector v, long count) {
+      var current = first;
+      var result = new DisjointSet();
+      if (!closed.TryAdd(current, result)) throw new ApplicationException();
+      for(var i = 0; i < count; i++) {
+        current += v;
+        if (!closed.TryAdd(current, result)) throw new ApplicationException();
+      }
+      return result;
     }
+
+    var leftWall = MakeWall(new(0, -1), Vector.South, size);
+    var rightWall = MakeWall(new(0, size+1), Vector.South, size);
+    var topWall = MakeWall(new(-1, 0), Vector.East, size);
+    var bottomWall = MakeWall(new(size + 1, 0), Vector.East, size);
 
     Point needle = Point.Zero;
     foreach(var wall in walls) {
       needle = wall;
-      ds.MakeSet(wall);
-      foreach(var next in Vector.CompassRose.Select(v => wall + v).Where(next => ds.Contains(next))) {
-        ds.Union(wall, next);
+      var ds = new DisjointSet();
+      if (!closed.TryAdd(wall, ds)) throw new ApplicationException();
+
+      foreach(var next in Vector.CompassRose.Select(v => wall + v).Where(next => closed.ContainsKey(next))) {
+        ds.Union(closed[next]);
       }
       
-      if (ds.SameUnion(leftWall[0], topWall[0])) break;
-      if (ds.SameUnion(leftWall[0], rightWall[0])) break;
-      if (ds.SameUnion(rightWall[0], bottomWall[0])) break;
-      if (ds.SameUnion(topWall[0], bottomWall[0])) break;
+      if (leftWall.SameUnion(topWall)) break;
+      if (leftWall.SameUnion(rightWall)) break;
+      if (rightWall.SameUnion(bottomWall)) break;
+      if (topWall.SameUnion(bottomWall)) break;
     }
     
     $"{needle.X},{needle.Y}".Should().Be(expected);
