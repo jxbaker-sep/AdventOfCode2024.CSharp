@@ -19,11 +19,23 @@ public class Day22
 
   [Theory]
   [InlineData("Day22.Sample.2", 23)]
-  // [InlineData("Day22", 14726157693)]
+  [InlineData("Day22", 1614)]
   public void Part2(string file, long expected)
   {
     var codes = FormatInput(AoCLoader.LoadLines(file));
-    // codes.Select(it => GetSecret(it, 2_000)).Sum().Should().Be(expected);
+    var d = new Dictionary<(long,long,long,long), long>();
+    foreach (var code in codes) GetSequences(code, d);
+    d.Values.Max().Should().Be(expected);
+  }
+
+  private static void GetSequences(long code, Dictionary<(long,long,long,long), long> sellPrices)
+  {
+    var closed = new HashSet<(long,long,long,long)>();
+    foreach(var w in GetSecrets(code, 2000).Select(it => it % 10).Windows(5)) {
+      var key = (w[1] - w[0], w[2] - w[1], w[3] - w[2], w[4] - w[3]);
+      if (!closed.Add(key)) continue;
+      sellPrices[key] = sellPrices.GetValueOrDefault(key) + w[4];
+    }
   }
 
   [Fact]
@@ -40,9 +52,14 @@ public class Day22
     GetSecrets(15887950, 7).Last().Should().Be(12249484);
     GetSecrets(15887950, 8).Last().Should().Be(7753432);
     GetSecrets(15887950, 9).Last().Should().Be(5908254);
+    var s = new Dictionary<(long,long,long,long), long>();
+    GetSequences(123, s);
+    s.TryGetValue((-1, -1, 0, 2), out var x).Should().BeTrue();
+    x.Should().Be(6);
   }
 
-  public IEnumerable<long> GetSecrets(long secret, long n) {
+  public static IEnumerable<long> GetSecrets(long secret, long n) {
+    yield return secret;
     for(var i = 0; i < n; i++) {
       secret = Prune(Mix(secret, secret * 64));
       secret = Prune(Mix(secret, secret / 32));
@@ -51,8 +68,8 @@ public class Day22
     }
   }
 
-  public long Mix(long n1, long n2) => n1 ^ n2;
-  public long Prune(long n) => n % 16777216;
+  public static long Mix(long n1, long n2) => n1 ^ n2;
+  public static long Prune(long n) => n % 16777216;
 
   private static List<long> FormatInput(List<string> input)
   {
