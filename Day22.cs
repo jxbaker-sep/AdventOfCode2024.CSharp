@@ -54,8 +54,7 @@ public class Day22
     GetSecrets(15887950, 9).Last().Should().Be(5908254);
     var s = new Dictionary<(long,long,long,long), long>();
     GetSequences(123, s);
-    s.TryGetValue((-1, -1, 0, 2), out var x).Should().BeTrue();
-    x.Should().Be(6);
+    s.Should().Contain(KeyValuePair.Create((-1L, -1L, 0L, 2L), 6L));
   }
 
   public static IEnumerable<long> GetSecrets(long secret, long n) {
