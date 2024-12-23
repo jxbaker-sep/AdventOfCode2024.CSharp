@@ -15,19 +15,20 @@ public class Day23
   {
     var connections = FormatInput(AoCLoader.LoadLines(file)).ToHashSet();
     connections = [..connections, ..connections.Select(it => new Connection(it.Second, it.First))];
-
-    var ts = connections.Select(it => it.First).Where(it => it[0] == 't').Distinct();
+    var d = connections.GroupBy(it => it.First, it => it.Second).ToDictionary(it => it.Key, it => it.ToHashSet());
+    
+    var ts = d.Keys.Where(it => it[0] == 't').Distinct();
 
     HashSet<(string, string, string)> master = [];
     foreach(var t in ts)
     {
-      var twoWay = connections.Where(it => it.First == t)
-        .SelectMany(c1 => connections.Where(c2 => c2.First == c1.Second && connections.Contains(new(c2.Second, t)))
-          .Select(c2 => {
-            List<string> l = [c1.First, c1.Second, c2.Second];
+      var twoWay = d[t]
+        .SelectMany(c1 => d[c1].Where(c2 => d[c2].Contains(t)).Select(c2 => (c1, c2)))
+          .Select(it => {
+            List<string> l = [t, it.c1, it.c2];
             l.Sort();
             return (l[0], l[1], l[2]);
-          }))
+          })
         .ToHashSet();
       master.UnionWith(twoWay);
     }
