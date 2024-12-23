@@ -7,6 +7,7 @@ public static class ParserBuiltins
 {
   public static readonly Parser<char> Any = new AnyParser();
   public static readonly Parser<char> Letter = Any.Where(char.IsLetter, "IsLetter");
+  public static readonly Parser<string> Word = Letter.Plus().Join();
   public static readonly Parser<char> Digit = Any.Where(char.IsNumber, "IsNumber");
   public static readonly Parser<long> Long = String("-").Optional().Then(Digit.Plus()).Select(it => Convert.ToInt64($"{it.First.FirstOrDefault()}{it.Second.Join()}"));
 
