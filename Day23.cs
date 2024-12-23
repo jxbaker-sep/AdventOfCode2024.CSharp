@@ -47,17 +47,15 @@ public class Day23
     var d = connections.GroupBy(it => it.First, it => it.Second).ToDictionary(it => it.Key, it => it.ToHashSet());
 
     HashSet<(string, string, string)> largest = [];
-    foreach(var (first, seconds) in d) {
-      HashSet<(string, string, string)> temp = [];
-      foreach(var second in seconds) {
-        foreach(var third in d[second]) {
-          if (d[third].Contains(first)) {
-            List<string> l = [first, second, third];
+    foreach(var first in d.Keys) {
+      HashSet<(string, string, string)> temp = d[first]
+        .SelectMany(c1 => d[c1].Where(c2 => d[c2].Contains(first)).Select(c2 => (c1, c2)))
+          .Select(it => {
+            List<string> l = [first, it.c1, it.c2];
             l.Sort();
-            temp.Add((l[0], l[1], l[2]));
-          }
-        }
-      }
+            return (l[0], l[1], l[2]);
+          })
+          .ToHashSet();
       if (temp.Count > largest.Count) largest = temp;
     }
 
