@@ -22,7 +22,7 @@ public class Day23
     foreach(var t in ts)
     {
       var twoWay = connections.Where(it => it.First == t)
-        .SelectMany(c1 => connections.Where(c2 => c2.First == c1.Second && c2.Second != t && connections.Contains(new(c2.Second, t)))
+        .SelectMany(c1 => connections.Where(c2 => c2.First == c1.Second && connections.Contains(new(c2.Second, t)))
           .Select(c2 => {
             List<string> l = [c1.First, c1.Second, c2.Second];
             l.Sort();
