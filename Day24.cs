@@ -14,7 +14,11 @@ public class Day24
   public void Part1(string file, long expected)
   {
     var gates = FormatInput(AoCLoader.LoadFile(file));
+    ComputeOutput(gates).Should().Be(expected);
+  }
 
+  public long ComputeOutput(List<Gate> gates)
+  {
     using Context ctx = new([]);
     var solver = ctx.MkSimpleSolver();
     var variables = gates.Select(it => it.Label)
@@ -42,13 +46,12 @@ public class Day24
       .OrderByDescending(it => it)
       .ToList();
 
-    gates
+    return gates
       .Select(g => g.Label)
       .Where(label => label.StartsWith("z"))
       .OrderByDescending(it => it)
       .Select(label => ((BoolExpr)solver.Model.ConstInterp(variables[label])).IsTrue ? 1L : 0L)
-      .Aggregate((a,b) => a * 2 + b)
-      .Should().Be(expected);
+      .Aggregate((a,b) => a * 2 + b);
   }
 
 
