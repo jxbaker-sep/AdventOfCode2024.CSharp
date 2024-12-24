@@ -20,12 +20,12 @@ public class Day23
     var ts = d.Keys.Where(it => it[0] == 't').Distinct();
 
     HashSet<(string, string, string)> master = [];
-    foreach(var t in ts)
+    foreach(var first in ts)
     {
-      var twoWay = d[t]
-        .SelectMany(c1 => d[c1].Where(c2 => d[c2].Contains(t)).Select(c2 => (c1, c2)))
+      var twoWay = d[first]
+        .SelectMany(second => d[second].Where(third => d[third].Contains(first)).Select(third => (second, third)))
           .Select(it => {
-            List<string> l = [t, it.c1, it.c2];
+            List<string> l = [first, it.second, it.third];
             l.Sort();
             return (l[0], l[1], l[2]);
           })
@@ -48,10 +48,10 @@ public class Day23
 
     HashSet<(string, string, string)> largest = [];
     foreach(var first in d.Keys) {
-      HashSet<(string, string, string)> temp = d[first]
-        .SelectMany(c1 => d[c1].Where(c2 => d[c2].Contains(first)).Select(c2 => (c1, c2)))
+      var temp = d[first]
+        .SelectMany(second => d[second].Where(third => d[third].Contains(first)).Select(third => (second, third)))
           .Select(it => {
-            List<string> l = [first, it.c1, it.c2];
+            List<string> l = [first, it.second, it.third];
             l.Sort();
             return (l[0], l[1], l[2]);
           })
