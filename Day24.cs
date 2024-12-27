@@ -1,4 +1,3 @@
-using System.Runtime.InteropServices;
 using AdventOfCode2024.CSharp.Utils;
 using FluentAssertions;
 using Microsoft.Z3;
@@ -21,8 +20,8 @@ public class Day24
 
   [Theory]
   // [InlineData("Day24.Sample.2", "z00,z01,z02,z05")]
-  [InlineData("Day24", "")]
-  public void Part2(string file, string expected)
+  [InlineData("Day24")]
+  public void Part2(string file)
   {
     var gates = FormatInput(AoCLoader.LoadFile(file));
 

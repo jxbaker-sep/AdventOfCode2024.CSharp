@@ -63,6 +63,50 @@ public class Day23
     items.Join(",").Should().Be(expected);
   }
 
+  [Theory]
+  [InlineData("Day23.Sample", "co,de,ka,ta")]
+  [InlineData("Day23", "cb,df,fo,ho,kk,nw,ox,pq,rt,sf,tq,wi,xz")]
+  public void BronKerbosch2(string file, string expected)
+  {
+    var connections = FormatInput(AoCLoader.LoadLines(file)).ToHashSet();
+    connections = [..connections, ..connections.Select(it => new Connection(it.Second, it.First))];
+
+    var d = connections.GroupBy(it => it.First, it => it.Second).ToDictionary(it => it.Key, it => it.ToHashSet());
+
+    BronKerboschWithPivot(new HashSet<string>(), d.Keys.ToHashSet(), new HashSet<string>(), d)
+      !.Order().Join(",").Should().Be(expected);
+  }
+
+  // public static IReadOnlySet<string> BronKerbosch(IReadOnlySet<string> r, IReadOnlySet<string> p, IReadOnlySet<string> x, IReadOnlyDictionary<string, HashSet<string>> neighbors) {
+  //   if (p.Count == 0 && x.Count == 0) return r;
+  //   IReadOnlySet<string> maximal = new HashSet<string>();
+  //   HashSet<string> myp = [..p];
+  //   HashSet<string> myx = [..x];
+  //   foreach(var v in p) {
+  //     var next = BronKerbosch(r.Append(v).ToHashSet(), myp.Intersect(neighbors[v]).ToHashSet(), myx.Intersect(neighbors[v]).ToHashSet(), neighbors);
+  //     if (next.Count > maximal.Count) maximal = next;
+  //     myp.Remove(v);
+  //     myx.Add(v);
+  //   }
+  //   return maximal;
+  // }
+
+  public static HashSet<string> BronKerboschWithPivot(HashSet<string> r, HashSet<string> p, HashSet<string> x, IReadOnlyDictionary<string, HashSet<string>> neighbors) {
+    if (p.Count == 0 && x.Count == 0) return r;
+    if (p.Count == 0) return [];
+    HashSet<string> maximal = [];
+    HashSet<string> myp = [..p];
+    HashSet<string> myx = [..x];
+    var pivot = p.First();
+    foreach(var v in p.Except(neighbors[pivot])) {
+      var next = BronKerboschWithPivot([.. r, v], myp.Intersect(neighbors[v]).ToHashSet(), myx.Intersect(neighbors[v]).ToHashSet(), neighbors);
+      if (next.Count > maximal.Count) maximal = next;
+      myp.Remove(v);
+      myx.Add(v);
+    }
+    return maximal;
+  }
+
   public record Connection(string First, string Second);
 
   private static List<Connection> FormatInput(List<string> input)

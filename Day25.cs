@@ -1,10 +1,6 @@
-using System.Runtime.InteropServices;
 using AdventOfCode2024.CSharp.Utils;
 using FluentAssertions;
-using Microsoft.Z3;
 using Parser;
-using Utils;
-using P = Parser.ParserBuiltins;
 
 namespace AdventOfCode2024.CSharp.Day25;
 

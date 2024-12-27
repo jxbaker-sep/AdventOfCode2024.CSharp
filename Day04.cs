@@ -1,6 +1,5 @@
 using AdventOfCode2024.CSharp.Utils;
 using FluentAssertions;
-using Utils;
 
 namespace AdventOfCode2024.CSharp.Day04;
 

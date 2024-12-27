@@ -1,7 +1,6 @@
 using AdventOfCode2024.CSharp.Utils;
 using FluentAssertions;
 using Parser;
-using Utils;
 namespace AdventOfCode2024.CSharp.Day12;
 
 public class Day12

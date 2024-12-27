@@ -1,7 +1,6 @@
 using FluentAssertions;
 using Parser;
 using P = Parser.ParserBuiltins;
-using Utils;
 using AdventOfCode2024.CSharp.Utils;
 namespace AdventOfCode2024.CSharp.Day18;
 
