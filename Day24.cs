@@ -33,7 +33,7 @@ public class Day24
       })
       .ToList();
 
-    var za = gates.Count(it => it.Output.StartsWith("z"));
+    var za = gates.Count(it => it.Output.StartsWith('z'));
 
     // z00 = x00 XOR y00
     // z00_carry = X00 AND Y00
@@ -109,7 +109,7 @@ public class Day24
 
   }
 
-  List<Gate> Swap(List<Gate> gates, Gate g1, Gate g2)
+  static List<Gate> Swap(List<Gate> gates, Gate g1, Gate g2)
   {
     return gates
       .Select(g => (g == g1) ? (g1 with {Output = g2.Output}) :
